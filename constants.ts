@@ -1,3 +1,15 @@
+
+export const COUNTIES = [
+  "Broward", "Dade", "Palm Beach", "St. Lucie", "Alachua", "Baker", "Bay", "Bradford", 
+  "Brevard", "Charlotte", "Citrus", "Clay", "Collier", "Columbia", "Desoto", "Dixie", 
+  "Escambia", "Duval", "Flagler", "Gilchrist", "Glades", "Hamilton", "Hardee", 
+  "Hendry", "Hernando", "Highlands", "Hillsborough", "Indian River", "Jackson", 
+  "Lafayette", "Lake", "Lee", "Leon", "Levy", "Manatee", "Martin", "Marion", 
+  "Monroe", "Nassau", "Okaloosa", "Okeechobee", "Orange", "Osceola", "Pasco", 
+  "Pinellas", "Polk", "Putnam", "Santa Rosa", "Sarasota", "Seminole", "St. Johns", 
+  "Sumter", "Suwannee", "Union", "Volusia", "Washington"
+];
+
 export const CITIES_BY_COUNTY: Record<string, string[]> = {
   "Broward": [
     "Coconut Creek", "Cooper City", "Coral Springs", "Dania Beach", "Davie", "Deerfield Beach",
@@ -204,6 +216,7 @@ export const CITIES_BY_COUNTY: Record<string, string[]> = {
   ],
   "default": ["All Cities"]
 };
+
 
 export const PRICE_RANGES_DEFAULT = [
   "$0 - $300,000",
