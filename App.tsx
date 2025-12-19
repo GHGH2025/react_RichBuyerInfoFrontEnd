@@ -238,7 +238,7 @@ const App: React.FC = () => {
                     </div>
                     <div>
                       <h2 className={`text-3xl font-black tracking-tight uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Special Notes & Direction</h2>
-                      <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-widest`}>Guidance for your profile creation</p>
+                      <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-widest`}>Guidance for submitting your preferences</p>
                     </div>
                   </div>
                   
@@ -502,7 +502,7 @@ const App: React.FC = () => {
                         : 'bg-white dark:bg-slate-900 text-blue-600/30 dark:text-slate-700 border-2 border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-80'
                     }`}
                   >
-                    <span>Submit Preferences</span>
+                    <span>Submit</span>
                     <ArrowRight className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${!isFormValid ? 'opacity-10' : ''}`} />
                   </button>
                   
