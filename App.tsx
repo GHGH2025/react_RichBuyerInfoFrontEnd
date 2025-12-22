@@ -1,4 +1,184 @@
 
+// import React, { useState, useMemo } from 'react';
+// import { 
+//   Building2, 
+//   MapPin, 
+//   User, 
+//   CheckCircle2, 
+//   AlertCircle, 
+//   ArrowRight,
+//   Info,
+//   Sun,
+//   Moon,
+//   Home,
+//   Waves,
+//   Layout,
+//   Store,
+//   Trees,
+//   PhoneCall,
+//   Mail,
+//   Briefcase,
+//   Smartphone,
+//   ShieldCheck
+// } from 'lucide-react';
+// import { 
+//   AppState, 
+//   PropertyTypeState, 
+//   ContactInfo, 
+//   PreferenceValue 
+// } from './types';
+// import { 
+//   COUNTIES, 
+//   CITIES_BY_COUNTY, 
+//   PROPERTY_CONFIG, 
+//   PRICE_RANGES_DEFAULT, 
+//   PRICE_RANGES_CONDO_TH 
+// } from './constants';
+
+// const INITIAL_PROPERTY_STATE: PropertyTypeState = {
+//   enabled: false,
+//   type: '',
+//   priceRange: '',
+//   preferences: {}
+// };
+
+// const App: React.FC = () => {
+//   const [isDarkMode, setIsDarkMode] = useState(false);
+//   const [isSubmitted, setIsSubmitted] = useState(false);
+//   const [formData, setFormData] = useState<AppState>({
+//     contact: { name: '', company: '', email: '', textNumber: '', phoneCall: '' },
+//     properties: {
+//       multiFamily: { ...INITIAL_PROPERTY_STATE },
+//       condo: { ...INITIAL_PROPERTY_STATE },
+//       land: { ...INITIAL_PROPERTY_STATE },
+//       commercial: { ...INITIAL_PROPERTY_STATE },
+//       singleFamily: { ...INITIAL_PROPERTY_STATE },
+//       townhouse: { ...INITIAL_PROPERTY_STATE },
+//     },
+//     location: { county: '', city: '' }
+//   });
+
+//   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+
+//   const updateContact = (field: keyof ContactInfo, value: string) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       contact: { ...prev.contact, [field]: value }
+//     }));
+//   };
+
+//   const toggleProperty = (key: keyof AppState['properties']) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       properties: {
+//         ...prev.properties,
+//         [key]: {
+//           ...prev.properties[key],
+//           enabled: !prev.properties[key].enabled,
+//           ...(prev.properties[key].enabled ? { type: '', priceRange: '', preferences: {} } : {})
+//         }
+//       }
+//     }));
+//   };
+
+//   const updatePropertyField = (
+//     key: keyof AppState['properties'], 
+//     field: 'type' | 'priceRange', 
+//     value: string
+//   ) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       properties: {
+//         ...prev.properties,
+//         [key]: { 
+//           ...prev.properties[key], 
+//           [field]: value,
+//           ...(field === 'type' && value === '' ? { priceRange: '', preferences: {} } : {})
+//         }
+//       }
+//     }));
+//   };
+
+//   const updatePreference = (
+//     key: keyof AppState['properties'], 
+//     prefKey: string, 
+//     value: PreferenceValue
+//   ) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       properties: {
+//         ...prev.properties,
+//         [key]: {
+//           ...prev.properties[key],
+//           preferences: {
+//             ...prev.properties[key].preferences,
+//             [prefKey]: value
+//           }
+//         }
+//       }
+//     }));
+//   };
+
+//   const updateLocation = (field: 'county' | 'city', value: string) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       location: { 
+//         ...prev.location, 
+//         [field]: value,
+//         ...(field === 'county' ? { city: '' } : {}) 
+//       }
+//     }));
+//   };
+
+//   const isFormValid = useMemo(() => {
+//     const { contact, properties, location } = formData;
+//     const isContactValid = 
+//       contact.name.trim() !== '' &&
+//       contact.company.trim() !== '' &&
+//       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email) &&
+//       contact.textNumber.trim() !== '' &&
+//       contact.phoneCall.trim() !== '';
+
+//     const isAnyPropertyValid = (Object.values(properties) as PropertyTypeState[]).some(p => p.enabled && p.type !== '');
+//     const isLocationValid = location.county !== '' && location.city !== '';
+
+//     return isContactValid && isAnyPropertyValid && isLocationValid;
+//   }, [formData]);
+
+//   const formStatusSummary = useMemo(() => {
+//     const { contact, properties, location } = formData;
+//     const steps = [];
+//     const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email);
+    
+//     if (!contact.name || !contact.company || !contact.email || !contact.textNumber || !contact.phoneCall) {
+//       steps.push("Fill in your Contact Info");
+//     } else if (!isEmailValid) {
+//       steps.push("Enter a valid Email address");
+//     }
+    
+//     const activeProps = (Object.values(properties) as PropertyTypeState[]).filter(p => p.enabled);
+//     if (activeProps.length === 0) {
+//       steps.push("Select a Property Type (click 'Yes, send me...')");
+//     } else if (activeProps.some(p => !p.type)) {
+//       steps.push("Select a specific 'Type' for your chosen category");
+//     }
+    
+//     if (!location.county || !location.city) {
+//       steps.push("Tell us where you want to buy (County & City)");
+//     }
+    
+//     return steps;
+//   }, [formData]);
+
+//   const handleSubmit = (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (!isFormValid) return;
+//     console.log("Submitting API Payload:", JSON.stringify(formData, null, 2));
+//     setIsSubmitted(true);
+//     window.scrollTo({ top: 0, behavior: 'smooth' });
+//   };
+
+
 import React, { useState, useMemo } from 'react';
 import { 
   Building2, 
@@ -39,7 +219,8 @@ const INITIAL_PROPERTY_STATE: PropertyTypeState = {
   enabled: false,
   type: '',
   priceRange: '',
-  preferences: {}
+  preferences: {},
+  otherType: ''
 };
 
 const App: React.FC = () => {
@@ -75,7 +256,7 @@ const App: React.FC = () => {
         [key]: {
           ...prev.properties[key],
           enabled: !prev.properties[key].enabled,
-          ...(prev.properties[key].enabled ? { type: '', priceRange: '', preferences: {} } : {})
+          ...(prev.properties[key].enabled ? { type: '', priceRange: '', preferences: {}, otherType: '' } : {})
         }
       }
     }));
@@ -83,7 +264,7 @@ const App: React.FC = () => {
 
   const updatePropertyField = (
     key: keyof AppState['properties'], 
-    field: 'type' | 'priceRange', 
+    field: 'type' | 'priceRange' | 'otherType', 
     value: string
   ) => {
     setFormData(prev => ({
@@ -93,7 +274,8 @@ const App: React.FC = () => {
         [key]: { 
           ...prev.properties[key], 
           [field]: value,
-          ...(field === 'type' && value === '' ? { priceRange: '', preferences: {} } : {})
+          ...(field === 'type' && value !== 'Other' ? { otherType: '' } : {}),
+          ...(field === 'type' && value === '' ? { priceRange: '', preferences: {}, otherType: '' } : {})
         }
       }
     }));
@@ -139,7 +321,13 @@ const App: React.FC = () => {
       contact.textNumber.trim() !== '' &&
       contact.phoneCall.trim() !== '';
 
-    const isAnyPropertyValid = (Object.values(properties) as PropertyTypeState[]).some(p => p.enabled && p.type !== '');
+    const isAnyPropertyValid = (Object.keys(properties) as Array<keyof typeof properties>).some(key => {
+      const p = properties[key];
+      if (!p.enabled) return false;
+      if (p.type === '') return false;
+      if (key === 'commercial' && p.type === 'Other' && (!p.otherType || p.otherType.trim() === '')) return false;
+      return true;
+    });
     const isLocationValid = location.county !== '' && location.city !== '';
 
     return isContactValid && isAnyPropertyValid && isLocationValid;
@@ -156,11 +344,16 @@ const App: React.FC = () => {
       steps.push("Enter a valid Email address");
     }
     
-    const activeProps = (Object.values(properties) as PropertyTypeState[]).filter(p => p.enabled);
+    const activeProps = (Object.keys(properties) as Array<keyof typeof properties>).filter(key => properties[key].enabled);
     if (activeProps.length === 0) {
       steps.push("Select a Property Type (click 'Yes, send me...')");
-    } else if (activeProps.some(p => !p.type)) {
-      steps.push("Select a specific 'Type' for your chosen category");
+    } else {
+       if (activeProps.some(key => !properties[key].type)) {
+         steps.push("Select a specific 'Type' for your chosen category");
+       }
+       if (activeProps.some(key => key === 'commercial' && properties[key].type === 'Other' && (!properties[key].otherType || properties[key].otherType.trim() === ''))) {
+         steps.push("Enter custom Commercial type details");
+       }
     }
     
     if (!location.county || !location.city) {
@@ -178,6 +371,7 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  
   if (isSubmitted) {
     return (
       <div className={`min-h-screen ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'} flex items-center justify-center p-6`}>
@@ -305,7 +499,157 @@ const App: React.FC = () => {
             </section>
 
             {/* Section 3: Property Types */}
+
+             {/* Section 3: Property Types */}
             <section className="space-y-12">
+              <div className="text-center space-y-4">
+                <h3 className={`text-4xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>What kind of property would you buy?</h3>
+                <div className="h-1.5 w-24 bg-blue-600 mx-auto rounded-full shadow-lg shadow-blue-600/20"></div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-12">
+                {(Object.keys(PROPERTY_CONFIG) as Array<keyof typeof PROPERTY_CONFIG>).map((key) => {
+                  const config = PROPERTY_CONFIG[key];
+                  const state = formData.properties[key];
+                  const isCommercial = key === 'commercial';
+                  const prices = (key === 'condo' || key === 'townhouse') ? PRICE_RANGES_CONDO_TH : PRICE_RANGES_DEFAULT;
+                  
+                  const Icon = {
+                    multiFamily: Layout,
+                    condo: Waves,
+                    land: Trees,
+                    commercial: Store,
+                    singleFamily: Home,
+                    townhouse: Building2
+                  }[key];
+
+                  return (
+                    <div key={key} className={`rounded-[3.5rem] border-2 transition-all duration-700 ${state.enabled ? (isDarkMode ? 'bg-slate-800 border-blue-500 shadow-2xl shadow-blue-500/10' : 'bg-white border-blue-600 ring-[12px] ring-blue-600/5 shadow-2xl') : (isDarkMode ? 'bg-slate-800/40 border-slate-700 opacity-60' : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm')}`}>
+                      <div className="p-8 md:p-14">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
+                          <div className="flex items-center gap-6">
+                            <div className={`p-5 rounded-[1.5rem] transition-all duration-700 ${state.enabled ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 scale-110' : (isDarkMode ? 'bg-slate-700 text-slate-500' : 'bg-blue-50/50 text-blue-600')}`}>
+                              <Icon size={32} />
+                            </div>
+                            <div>
+                              <h4 className={`text-2xl md:text-3xl font-black tracking-tight uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{config.title}</h4>
+                              <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Preference Settings</p>
+                            </div>
+                          </div>
+                          
+                          <label className={`flex items-center gap-6 cursor-pointer select-none px-6 md:px-8 py-5 md:py-6 rounded-[2rem] border-2 transition-all group ${state.enabled ? 'bg-blue-600 border-blue-700 text-white' : (isDarkMode ? 'bg-slate-900/50 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-white hover:border-blue-100')}`}>
+                            <div className="relative flex items-center">
+                              <input 
+                                type="checkbox"
+                                checked={state.enabled}
+                                onChange={() => toggleProperty(key)}
+                                className="sr-only peer"
+                              />
+                              <div className={`w-12 h-6 md:w-14 md:h-7 rounded-full transition-all duration-300 ${state.enabled ? 'bg-blue-400' : 'bg-slate-300 dark:bg-slate-700'} peer-focus:outline-none relative flex items-center px-[2px] after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 md:after:h-5 md:after:w-5 after:transition-all peer-checked:after:translate-x-6 md:peer-checked:after:translate-x-7`}></div>
+                            </div>
+                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest leading-none">
+                              Yes, send me this type of property.
+                            </span>
+                          </label>
+                        </div>
+
+                        {state.enabled && (
+                          <div className="animate-in fade-in zoom-in-95 duration-700 space-y-16">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                              <div className="space-y-4">
+                                <label className={`text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                  <ArrowRight size={14} className="text-blue-600" /> Choose Category Type*
+                                </label>
+                                <div className="relative">
+                                  <select 
+                                    value={state.type}
+                                    onChange={(e) => updatePropertyField(key, 'type', e.target.value)}
+                                    className={`w-full px-6 md:px-8 py-5 md:py-6 rounded-2xl border-2 appearance-none transition-all outline-none focus:ring-4 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/20' : 'bg-white border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200'}`}
+                                  >
+                                    <option value="">-- Select Specific Type --</option>
+                                    {config.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                  </select>
+                                  <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-blue-600">
+                                    <ArrowRight size={20} />
+                                  </div>
+                                </div>
+                                {isCommercial && state.type === 'Other' && (
+                                  <div className="mt-6 animate-in fade-in slide-in-from-top-2">
+                                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] block mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Please Specify Property Type*</label>
+                                    <input 
+                                      type="text"
+                                      value={state.otherType || ''}
+                                      onChange={(e) => updatePropertyField(key, 'otherType', e.target.value)}
+                                      placeholder="e.g. Cold Storage Warehouse"
+                                      className={`w-full px-6 py-5 rounded-2xl border-2 transition-all outline-none focus:ring-4 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/20' : 'bg-slate-50 border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200 focus:bg-white'}`}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+
+                              {!isCommercial && (
+                                <div className={`space-y-4 transition-all duration-500 ${state.type === '' ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
+                                  <label className={`text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    <ArrowRight size={14} className="text-blue-600" /> How Much Will You Pay?
+                                  </label>
+                                  <div className="relative">
+                                    <select 
+                                      value={state.priceRange}
+                                      onChange={(e) => updatePropertyField(key, 'priceRange', e.target.value)}
+                                      className={`w-full px-6 md:px-8 py-5 md:py-6 rounded-2xl border-2 appearance-none transition-all outline-none focus:ring-4 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/20' : 'bg-white border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200'}`}
+                                    >
+                                      <option value="">-- Select Price Range --</option>
+                                      {prices.map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                    <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-blue-600">
+                                      <ArrowRight size={20} />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {!isCommercial && (
+                              <div className={`space-y-10 transition-all duration-700 ${state.type === '' ? 'opacity-5 pointer-events-none' : 'opacity-100'}`}>
+                                <div className="flex items-center gap-5">
+                                  <h5 className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>Special Preferences Matrix</h5>
+                                  <div className="h-0.5 flex-1 bg-blue-600/10"></div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6">
+                                  {config.prefs.map(pref => (
+                                    <div key={pref} className={`group p-6 md:p-8 rounded-[2.5rem] flex flex-col xl:flex-row xl:items-center justify-between gap-6 transition-all border-2 ${isDarkMode ? 'bg-slate-900/40 border-slate-700' : 'bg-[#FAFBFF] border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-2xl'}`}>
+                                      <span className={`text-sm font-bold leading-relaxed max-w-xl ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>{pref}</span>
+                                      <div className={`grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 md:p-2 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-inner' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                        {['No', 'Yes', 'Maybe', 'Only'].map((val) => (
+                                          <label key={val} className="relative w-full">
+                                            <input 
+                                              type="radio"
+                                              name={`${key}-${pref}`}
+                                              value={val}
+                                              checked={state.preferences[pref] === val}
+                                              onChange={() => updatePreference(key, pref, val as PreferenceValue)}
+                                              className="sr-only peer"
+                                            />
+                                            <div className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl ${isDarkMode ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-900'}`}>
+                                              {val}
+                                            </div>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+            {/* <section className="space-y-12">
               <div className="text-center space-y-4">
                 <h3 className={`text-4xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>What kind of property would you buy?</h3>
                 <div className="h-1.5 w-24 bg-blue-600 mx-auto rounded-full shadow-lg shadow-blue-600/20"></div>
@@ -436,7 +780,7 @@ const App: React.FC = () => {
                   );
                 })}
               </div>
-            </section>
+            </section> */}
 
             {/* Section 4 & 5: Regional Parameters */}
             <section className="space-y-10">

@@ -234,6 +234,23 @@ export const PRICE_RANGES_CONDO_TH = [
 ];
 
 export const PROPERTY_CONFIG = {
+   singleFamily: {
+    title: "Single Family",
+    options: ["Yes, I am interested in Single Family Houses"],
+    prefs: [
+      "Property Needs a Full Rehab",
+      "Property has Code Violations / Liens / Fines",
+      "Property is Fire Damaged",
+      "Need to Buy Property Sight Unseen (Bad Tenants, Other Access Issues) - Videos or Pictures might be available case by case.",
+      "Property with Ocean Access / Intracoastal",
+      "$1 Million Dollar Houses and Up",
+      "55 Plus Communities",
+      "Frame Construction",
+      "Bulk Property Packages",
+      "Mold Remediation Needed",
+      "Property has Foundation / Structural Issues"
+    ]
+  },
   multiFamily: {
     title: "Multi Family",
     options: [
@@ -259,7 +276,7 @@ export const PROPERTY_CONFIG = {
     options: [
       "Condos in General - Any Location",
       "Located on Beach Front Only",
-      "Located on Ocean Access Way Only",
+      "Located on Ocean Access / Intracoastal Way Only",
       "Located on Water Front Only",
       "Located on Golf Course Only",
       "Property has rental restrictions",
@@ -267,10 +284,7 @@ export const PROPERTY_CONFIG = {
     ],
     prefs: [
       "Property Needs a Full Rehab",
-      "Property with Ocean Access / Intracoastal",
       "$1 Million Dollar Houses and Up",
-      "Frame Construction",
-      "Mobile Homes",
       "Bulk Property Packages",
       "Property has Foundation / Structural Issues"
     ]
@@ -289,18 +303,10 @@ export const PROPERTY_CONFIG = {
       "Special Use - Please describe below)"
     ],
     prefs: [
-      "Property Needs a Full Rehab",
       "Property has Code Violations / Liens / Fines",
-      "Property is Fire Damaged",
-      "Need to Buy Property Sight Unseen (Bad Tenants, Other Access Issues) - Videos or Pictures might be available case by case.",
       "Property with Ocean Access / Intracoastal",
       "$1 Million Dollar Houses and Up",
-      "55 Plus Communities",
-      "Frame Construction",
-      "Mobile Homes",
       "Bulk Property Packages",
-      "Mold Remediation Needed",
-      "Property has Foundation / Structural Issues"
     ]
   },
   commercial: {
@@ -310,7 +316,7 @@ export const PROPERTY_CONFIG = {
       "Marina", "Industrial", "Billboard", "Hospital", "Church", "Office Building",
       "Fast Food", "Assisted Living", "Medical", "Manufacturing", "Dockage",
       "Car Wash", "Mineral", "Oil, Gas, Metals", "Stadium", "Adult Entertainment",
-      "Gambling", "Farms", "Drug rehab centre"
+      "Gambling", "Farms", "Drug rehab centre", "Other"
     ],
     prefs: [
       "Property Needs a Full Rehab",
@@ -327,24 +333,7 @@ export const PROPERTY_CONFIG = {
       "Property has Foundation / Structural Issues"
     ]
   },
-  singleFamily: {
-    title: "Single Family",
-    options: ["Yes, I am interested in Single Family Houses"],
-    prefs: [
-      "Property Needs a Full Rehab",
-      "Property has Code Violations / Liens / Fines",
-      "Property is Fire Damaged",
-      "Need to Buy Property Sight Unseen (Bad Tenants, Other Access Issues) - Videos or Pictures might be available case by case.",
-      "Property with Ocean Access / Intracoastal",
-      "$1 Million Dollar Houses and Up",
-      "55 Plus Communities",
-      "Frame Construction",
-      "Mobile Homes",
-      "Bulk Property Packages",
-      "Mold Remediation Needed",
-      "Property has Foundation / Structural Issues"
-    ]
-  },
+ 
   townhouse: {
     title: "Town House",
     options: ["Townhouses in General - Any Location"],
@@ -357,7 +346,6 @@ export const PROPERTY_CONFIG = {
       "$1 Million Dollar Houses and Up",
       "55 Plus Communities",
       "Frame Construction",
-      "Mobile Homes",
       "Bulk Property Packages",
       "Mold Remediation Needed",
       "Property has Foundation / Structural Issues"

@@ -10,6 +10,7 @@ export interface PropertyTypeState {
   type: string;
   priceRange: string;
   preferences: PropertyPreferences;
+  otherType?: string; // Field for custom commercial type input
 }
 
 export interface ContactInfo {
