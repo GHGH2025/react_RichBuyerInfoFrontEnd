@@ -1,184 +1,4 @@
 
-// import React, { useState, useMemo } from 'react';
-// import { 
-//   Building2, 
-//   MapPin, 
-//   User, 
-//   CheckCircle2, 
-//   AlertCircle, 
-//   ArrowRight,
-//   Info,
-//   Sun,
-//   Moon,
-//   Home,
-//   Waves,
-//   Layout,
-//   Store,
-//   Trees,
-//   PhoneCall,
-//   Mail,
-//   Briefcase,
-//   Smartphone,
-//   ShieldCheck
-// } from 'lucide-react';
-// import { 
-//   AppState, 
-//   PropertyTypeState, 
-//   ContactInfo, 
-//   PreferenceValue 
-// } from './types';
-// import { 
-//   COUNTIES, 
-//   CITIES_BY_COUNTY, 
-//   PROPERTY_CONFIG, 
-//   PRICE_RANGES_DEFAULT, 
-//   PRICE_RANGES_CONDO_TH 
-// } from './constants';
-
-// const INITIAL_PROPERTY_STATE: PropertyTypeState = {
-//   enabled: false,
-//   type: '',
-//   priceRange: '',
-//   preferences: {}
-// };
-
-// const App: React.FC = () => {
-//   const [isDarkMode, setIsDarkMode] = useState(false);
-//   const [isSubmitted, setIsSubmitted] = useState(false);
-//   const [formData, setFormData] = useState<AppState>({
-//     contact: { name: '', company: '', email: '', textNumber: '', phoneCall: '' },
-//     properties: {
-//       multiFamily: { ...INITIAL_PROPERTY_STATE },
-//       condo: { ...INITIAL_PROPERTY_STATE },
-//       land: { ...INITIAL_PROPERTY_STATE },
-//       commercial: { ...INITIAL_PROPERTY_STATE },
-//       singleFamily: { ...INITIAL_PROPERTY_STATE },
-//       townhouse: { ...INITIAL_PROPERTY_STATE },
-//     },
-//     location: { county: '', city: '' }
-//   });
-
-//   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
-
-//   const updateContact = (field: keyof ContactInfo, value: string) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       contact: { ...prev.contact, [field]: value }
-//     }));
-//   };
-
-//   const toggleProperty = (key: keyof AppState['properties']) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       properties: {
-//         ...prev.properties,
-//         [key]: {
-//           ...prev.properties[key],
-//           enabled: !prev.properties[key].enabled,
-//           ...(prev.properties[key].enabled ? { type: '', priceRange: '', preferences: {} } : {})
-//         }
-//       }
-//     }));
-//   };
-
-//   const updatePropertyField = (
-//     key: keyof AppState['properties'], 
-//     field: 'type' | 'priceRange', 
-//     value: string
-//   ) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       properties: {
-//         ...prev.properties,
-//         [key]: { 
-//           ...prev.properties[key], 
-//           [field]: value,
-//           ...(field === 'type' && value === '' ? { priceRange: '', preferences: {} } : {})
-//         }
-//       }
-//     }));
-//   };
-
-//   const updatePreference = (
-//     key: keyof AppState['properties'], 
-//     prefKey: string, 
-//     value: PreferenceValue
-//   ) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       properties: {
-//         ...prev.properties,
-//         [key]: {
-//           ...prev.properties[key],
-//           preferences: {
-//             ...prev.properties[key].preferences,
-//             [prefKey]: value
-//           }
-//         }
-//       }
-//     }));
-//   };
-
-//   const updateLocation = (field: 'county' | 'city', value: string) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       location: { 
-//         ...prev.location, 
-//         [field]: value,
-//         ...(field === 'county' ? { city: '' } : {}) 
-//       }
-//     }));
-//   };
-
-//   const isFormValid = useMemo(() => {
-//     const { contact, properties, location } = formData;
-//     const isContactValid = 
-//       contact.name.trim() !== '' &&
-//       contact.company.trim() !== '' &&
-//       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email) &&
-//       contact.textNumber.trim() !== '' &&
-//       contact.phoneCall.trim() !== '';
-
-//     const isAnyPropertyValid = (Object.values(properties) as PropertyTypeState[]).some(p => p.enabled && p.type !== '');
-//     const isLocationValid = location.county !== '' && location.city !== '';
-
-//     return isContactValid && isAnyPropertyValid && isLocationValid;
-//   }, [formData]);
-
-//   const formStatusSummary = useMemo(() => {
-//     const { contact, properties, location } = formData;
-//     const steps = [];
-//     const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email);
-    
-//     if (!contact.name || !contact.company || !contact.email || !contact.textNumber || !contact.phoneCall) {
-//       steps.push("Fill in your Contact Info");
-//     } else if (!isEmailValid) {
-//       steps.push("Enter a valid Email address");
-//     }
-    
-//     const activeProps = (Object.values(properties) as PropertyTypeState[]).filter(p => p.enabled);
-//     if (activeProps.length === 0) {
-//       steps.push("Select a Property Type (click 'Yes, send me...')");
-//     } else if (activeProps.some(p => !p.type)) {
-//       steps.push("Select a specific 'Type' for your chosen category");
-//     }
-    
-//     if (!location.county || !location.city) {
-//       steps.push("Tell us where you want to buy (County & City)");
-//     }
-    
-//     return steps;
-//   }, [formData]);
-
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!isFormValid) return;
-//     console.log("Submitting API Payload:", JSON.stringify(formData, null, 2));
-//     setIsSubmitted(true);
-//     window.scrollTo({ top: 0, behavior: 'smooth' });
-//   };
-
-
 import React, { useState, useMemo } from 'react';
 import { 
   Building2, 
@@ -363,15 +183,63 @@ const App: React.FC = () => {
     return steps;
   }, [formData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
-    console.log("Submitting API Payload:", JSON.stringify(formData, null, 2));
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!isFormValid) return;
+  //   console.log("Submitting API Payload:", JSON.stringify(formData, null, 2));
+  //   setIsSubmitted(true);
+  //   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // };
 
-  
+  const API_BASE_URL =
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  (process as any).env?.REACT_APP_API_BASE_URL ||
+  "";
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!isFormValid) return;
+
+  try {
+    const url = `${API_BASE_URL.replace(/\/$/, "")}/api/buyer-submissions`;
+
+    console.log("Submitting API Payload:", JSON.stringify(formData, null, 2));
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    // If backend returns non-2xx, show readable error
+    if (!res.ok) {
+      let errText = `Request failed (${res.status})`;
+      try {
+        const errJson = await res.json();
+        errText = errJson?.detail || errJson?.error || JSON.stringify(errJson);
+      } catch {
+        errText = await res.text();
+      }
+      throw new Error(errText);
+    }
+
+    const data = await res.json(); // { ok, mongo_id, podio_ok, ... }
+
+    // optional: store response if you want to show it in UI
+    // setSubmitResponse(data);
+
+    setIsSubmitted(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+  } catch (err: any) {
+    console.error("Submit error:", err);
+    // optional UI message
+    // setSubmitError(err?.message || "Something went wrong submitting the form.");
+  }
+};
+
+
+
   if (isSubmitted) {
     return (
       <div className={`min-h-screen ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'} flex items-center justify-center p-6`}>
