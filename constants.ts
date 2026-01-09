@@ -1,4 +1,19 @@
 
+export const SOUTH_FLORIDA_COUNTIES = ["Monroe", "Broward", "Dade", "Palm Beach", "St. Lucie"];
+
+export const LOCATION_OPTIONS = [
+  { value: "all_florida", label: "All Florida" },
+  { value: "south_florida", label: "South Florida" },
+] as const;
+
+export const ALL_PRICE_RANGES_OPTION = "All price ranges";
+
+export const BEDS_OPTIONS = ["2+", "3+", "4+", "5+", "Any"] as const;
+export const BATHS_OPTIONS = ["1+", "2+", "3+", "Any"] as const;
+
+
+
+
 export const COUNTIES = [
   "Broward", "Dade", "Palm Beach", "St. Lucie", "Alachua", "Baker", "Bay", "Bradford", 
   "Brevard", "Charlotte", "Citrus", "Clay", "Collier", "Columbia", "Desoto", "Dixie", 
@@ -217,8 +232,8 @@ export const CITIES_BY_COUNTY: Record<string, string[]> = {
   "default": ["All Cities"]
 };
 
-
 export const PRICE_RANGES_DEFAULT = [
+  "All price ranges",
   "$0 - $300,000",
   "$300,000 - $600,000",
   "$600,000 - $1,000,000",
@@ -226,12 +241,14 @@ export const PRICE_RANGES_DEFAULT = [
 ];
 
 export const PRICE_RANGES_CONDO_TH = [
+  "All price ranges",
   "$0 - $100,000",
   "$100,000 - $175,000",
   "$175,000 - $300,000",
   "$300,000 - $600,000",
   "$600,000 - $1,000,000"
 ];
+
 
 export const PROPERTY_CONFIG = {
    singleFamily: {
@@ -248,7 +265,14 @@ export const PROPERTY_CONFIG = {
       "Frame Construction",
       "Bulk Property Packages",
       "Mold Remediation Needed",
-      "Property has Foundation / Structural Issues"
+      "Property has Foundation / Structural Issues",
+      "Pool",
+"Garage",
+"Water/ Flood Damage",
+"Tear-downs / land value only",
+"Unpermitted additions",
+"Eviction Needed/ In Progress",
+"Post Occupancy Required (with escrow holdback and/ or rent)"
     ]
   },
   multiFamily: {
@@ -268,7 +292,9 @@ export const PROPERTY_CONFIG = {
       "Need to Buy Property Sight Unseen (Bad Tenants, Other Access Issues) - Videos or Pictures might be available case by case.",
       "Frame Construction",
       "Mold Remediation Needed",
-      "Property has Foundation / Structural Issues"
+      "Property has Foundation / Structural Issues",
+      "40/10 Year Inspection Certificate Failed",
+"40/10 Year Inspection Certificate Passed"
     ]
   },
   condo: {
@@ -300,7 +326,8 @@ export const PROPERTY_CONFIG = {
       "Ocean Access/ Intracoastal",
       "Agriculture",
       "Industrial",
-      "Special Use - Please describe below)"
+      "Special Use - Please describe below)",
+      "Tear-downs / land value only"
     ],
     prefs: [
       "Property has Code Violations / Liens / Fines",
@@ -348,7 +375,16 @@ export const PROPERTY_CONFIG = {
       "Frame Construction",
       "Bulk Property Packages",
       "Mold Remediation Needed",
-      "Property has Foundation / Structural Issues"
+      "Property has Foundation / Structural Issues",
+       "Pool",
+"Garage",
+"Water/ Flood Damage",
+"Tear-downs / land value only",
+"Unpermitted additions",
+"Eviction Needed/ In Progress",
+"Post Occupancy Required (with escrow holdback and/ or rent)"
     ]
   }
 };
+
+

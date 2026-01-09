@@ -1,24 +1,83 @@
 
+// export type PreferenceValue = 'No' | 'Yes' | 'Maybe' | 'Only';
+
+// export interface PropertyPreferences {
+//   [key: string]: PreferenceValue;
+// }
+
+// export interface PropertyTypeState {
+//   enabled: boolean;
+//   type: string;
+//   priceRange: string;
+//   preferences: PropertyPreferences;
+//   otherType?: string; // Field for custom commercial type input
+// }
+
+// export interface ContactInfo {
+//   name: string;
+//   company: string;
+//   email: string;
+//   textNumber: string; // The "Text" field from instructions
+//   phoneCall: string;  // The "Phone Call" field from instructions
+// }
+
+// export interface AppState {
+//   contact: ContactInfo;
+//   properties: {
+//     multiFamily: PropertyTypeState;
+//     condo: PropertyTypeState;
+//     land: PropertyTypeState;
+//     commercial: PropertyTypeState;
+//     singleFamily: PropertyTypeState;
+//     townhouse: PropertyTypeState;
+//   };
+//   location: {
+//     county: string;
+//     city: string;
+//   };
+// }
+
+
 export type PreferenceValue = 'No' | 'Yes' | 'Maybe' | 'Only';
+
+export type CommunicationPreference = 'Text' | 'Email' | 'WhatsApp' | 'Call';
+
+export type LocationScope = 'all_florida' | 'south_florida';
 
 export interface PropertyPreferences {
   [key: string]: PreferenceValue;
 }
 
+export interface PropertyLocation {
+  scope: '' | LocationScope;
+  counties: string[]; // only used when scope === 'south_florida'
+}
+
 export interface PropertyTypeState {
   enabled: boolean;
+
+  // Keep this for compatibility (commercial + any property config with multiple "options")
   type: string;
-  priceRange: string;
+
+  // UPDATED: multi-select
+  priceRanges: string[];
+
+  // NEW: required for Single Family / Townhouse / Condo
+  beds: string[];
+  baths: string[];
+
+  // NEW: location rules per property type
+  location: PropertyLocation;
+
   preferences: PropertyPreferences;
-  otherType?: string; // Field for custom commercial type input
+  otherType?: string;
 }
 
 export interface ContactInfo {
   name: string;
-  company: string;
   email: string;
-  textNumber: string; // The "Text" field from instructions
-  phoneCall: string;  // The "Phone Call" field from instructions
+  callWhatsapp: string; // digits only
+  communicationPreference: '' | CommunicationPreference;
 }
 
 export interface AppState {
@@ -30,9 +89,5 @@ export interface AppState {
     commercial: PropertyTypeState;
     singleFamily: PropertyTypeState;
     townhouse: PropertyTypeState;
-  };
-  location: {
-    county: string;
-    city: string;
   };
 }
