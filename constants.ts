@@ -266,13 +266,13 @@ export const PROPERTY_CONFIG = {
       "Bulk Property Packages",
       "Mold Remediation Needed",
       "Property has Foundation / Structural Issues",
+      "Water/ Flood Damage",
+      "Tear-downs / land value only",
+      "Unpermitted additions",
+      "Eviction Needed/ In Progress",
+      "Post Occupancy Required (with escrow holdback and/ or rent)",
       "Pool",
-"Garage",
-"Water/ Flood Damage",
-"Tear-downs / land value only",
-"Unpermitted additions",
-"Eviction Needed/ In Progress",
-"Post Occupancy Required (with escrow holdback and/ or rent)"
+      "Garage"
     ]
   },
   multiFamily: {
@@ -309,10 +309,14 @@ export const PROPERTY_CONFIG = {
       "Property has special assessments"
     ],
     prefs: [
-      "Property Needs a Full Rehab",
-      "$1 Million Dollar Houses and Up",
       "Bulk Property Packages",
-      "Property has Foundation / Structural Issues"
+      "Property has Foundation / Structural Issues",
+      "55 Plus Communities",
+      "Property has rental restrictions",
+      "Property has special assessments",
+      "Located on Ocean Access / Intracoastal Way Only",
+      "Located on Water Front Only",
+      "Located on Golf Course Only",
     ]
   },
   land: {
