@@ -317,6 +317,8 @@ export const PROPERTY_CONFIG = {
       "Located on Ocean Access / Intracoastal Way Only",
       "Located on Water Front Only",
       "Located on Golf Course Only",
+      "40 year inspection failed",
+      "NO HOA"
     ]
   },
   land: {
