@@ -34,6 +34,7 @@ import {
   PRICE_RANGES_CONDO_TH,
   SOUTH_FLORIDA_COUNTIES,
   LOCATION_OPTIONS,
+  PROPERTY_LOCATION_OPTIONS,
   ALL_PRICE_RANGES_OPTION,
   BEDS_OPTIONS,
   BATHS_OPTIONS,
@@ -49,7 +50,8 @@ const INITIAL_PROPERTY_STATE: PropertyTypeState = {
   priceRanges: [],
   beds: [],
   baths: [],
-  location: { scope: '' },
+  // location: { scope: '' },
+  location: { scope: '', counties: [], cities: [] },
   preferences: {},
   otherType: '',
 };
@@ -59,13 +61,14 @@ const hasBedsBaths = (key: keyof AppState['properties']) =>
   key === 'singleFamily' || key === 'townhouse' || key === 'condo';
 
 const requiresSubtype = (key: keyof AppState['properties']) =>
-  key === 'multiFamily' || key === 'condo' || key === 'land' || key === 'commercial';
+  key === 'multiFamily' || key === 'land' || key === 'commercial';
 
 const App: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
+  const [citySearch, setCitySearch] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState<AppState>({
     contact: { name: '', email: '', callWhatsapp: '', communicationPreference: [] },
@@ -77,10 +80,10 @@ const App: React.FC = () => {
       singleFamily: { ...INITIAL_PROPERTY_STATE },
       townhouse: { ...INITIAL_PROPERTY_STATE },
     },
-    location: {
-      counties: [],
-      cities: [],
-    },
+    // location: {
+    //   counties: [],
+    //   cities: [],
+    // },
   });
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
@@ -196,6 +199,19 @@ const App: React.FC = () => {
     }));
   };
 
+  // const updatePropertyLocationScope = (key: keyof AppState['properties'], scope: '' | LocationScope) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     properties: {
+  //       ...prev.properties,
+  //       [key]: {
+  //         ...prev.properties[key],
+  //         location: { scope },
+  //       },
+  //     },
+  //   }));
+  // };
+
   const updatePropertyLocationScope = (key: keyof AppState['properties'], scope: '' | LocationScope) => {
     setFormData(prev => ({
       ...prev,
@@ -203,11 +219,20 @@ const App: React.FC = () => {
         ...prev.properties,
         [key]: {
           ...prev.properties[key],
-          location: { scope },
+          location: {
+            scope,
+            // ✅ reset selection when scope changes to avoid mixed state
+            counties: [],
+            cities: [],
+          },
         },
       },
     }));
+
+    // ✅ clear search UI when switching away
+    setCitySearch(prev => ({ ...prev, [key]: '' }));
   };
+
 
   const toggleExclusiveMultiSelect = (
     current: string[],
@@ -266,144 +291,189 @@ const App: React.FC = () => {
     });
   };
 
+  const togglePropertyCounty = (key: keyof AppState['properties'], county: string) => {
+    setFormData(prev => {
+      const curr = prev.properties[key].location.counties || [];
+      const next = curr.includes(county) ? curr.filter(c => c !== county) : [...curr, county];
+
+      return {
+        ...prev,
+        properties: {
+          ...prev.properties,
+          [key]: {
+            ...prev.properties[key],
+            location: {
+              ...prev.properties[key].location,
+              counties: next,
+              cities: [], // ✅ counties mode: no cities
+            },
+          },
+        },
+      };
+    });
+  };
+
+  const togglePropertyCity = (key: keyof AppState['properties'], city: string) => {
+    setFormData(prev => {
+      const curr = prev.properties[key].location.cities || [];
+      const next = curr.includes(city) ? curr.filter(c => c !== city) : [...curr, city];
+
+      return {
+        ...prev,
+        properties: {
+          ...prev.properties,
+          [key]: {
+            ...prev.properties[key],
+            location: {
+              ...prev.properties[key].location,
+              cities: next,
+              counties: [], // ✅ cities mode: no counties
+            },
+          },
+        },
+      };
+    });
+  };
+
+
   // ---------- ✅ Enabled keys ----------
   const enabledKeys = useMemo(() => {
     const props = formData.properties;
     return (Object.keys(props) as Array<keyof typeof props>).filter(k => props[k].enabled);
   }, [formData.properties]);
 
-  const allPropertyLocationScopesChosen = useMemo(() => {
-    if (enabledKeys.length === 0) return false;
-    return enabledKeys.every(k => !!formData.properties[k].location?.scope);
-  }, [enabledKeys, formData.properties]);
+  // const allPropertyLocationScopesChosen = useMemo(() => {
+  //   if (enabledKeys.length === 0) return false;
+  //   return enabledKeys.every(k => !!formData.properties[k].location?.scope);
+  // }, [enabledKeys, formData.properties]);
 
-  // ---------- ✅ Derived final location scope (global) ----------
-  const derivedLocationScope = useMemo<'' | LocationScope>(() => {
-    if (enabledKeys.length === 0) return '';
-    if (!allPropertyLocationScopesChosen) return '';
+  // // ---------- ✅ Derived final location scope (global) ----------
+  // const derivedLocationScope = useMemo<'' | LocationScope>(() => {
+  //   if (enabledKeys.length === 0) return '';
+  //   if (!allPropertyLocationScopesChosen) return '';
 
-    const anyAllFlorida = enabledKeys.some(
-      k => formData.properties[k].location.scope === 'all_florida'
-    );
-    return anyAllFlorida ? 'all_florida' : 'south_florida';
-  }, [enabledKeys, allPropertyLocationScopesChosen, formData.properties]);
+  //   const anyAllFlorida = enabledKeys.some(
+  //     k => formData.properties[k].location.scope === 'all_florida'
+  //   );
+  //   return anyAllFlorida ? 'all_florida' : 'south_florida';
+  // }, [enabledKeys, allPropertyLocationScopesChosen, formData.properties]);
 
-  const allowedCounties = useMemo<string[]>(() => {
-    if (!derivedLocationScope) return [];
-    return derivedLocationScope === 'all_florida' ? COUNTIES : SOUTH_FLORIDA_COUNTIES;
-  }, [derivedLocationScope]);
+  // const allowedCounties = useMemo<string[]>(() => {
+  //   if (!derivedLocationScope) return [];
+  //   return derivedLocationScope === 'all_florida' ? COUNTIES : SOUTH_FLORIDA_COUNTIES;
+  // }, [derivedLocationScope]);
 
-  const availableCities = useMemo<string[]>(() => {
-    const selectedCounties = formData.location.counties || [];
-    if (selectedCounties.length === 0) return [];
+  // const availableCities = useMemo<string[]>(() => {
+  //   const selectedCounties = formData.location.counties || [];
+  //   if (selectedCounties.length === 0) return [];
 
-    const set = new Set<string>();
-    for (const county of selectedCounties) {
-      const list = CITIES_BY_COUNTY[county] || CITIES_BY_COUNTY['default'] || [];
-      for (const city of list) set.add(city);
-    }
+  //   const set = new Set<string>();
+  //   for (const county of selectedCounties) {
+  //     const list = CITIES_BY_COUNTY[county] || CITIES_BY_COUNTY['default'] || [];
+  //     for (const city of list) set.add(city);
+  //   }
 
-    const cities = Array.from(set);
-    // ensure All Cities is available
-    if (!cities.includes(ALL_CITIES_OPTION)) cities.unshift(ALL_CITIES_OPTION);
-    return cities;
-  }, [formData.location.counties]);
+  //   const cities = Array.from(set);
+  //   // ensure All Cities is available
+  //   if (!cities.includes(ALL_CITIES_OPTION)) cities.unshift(ALL_CITIES_OPTION);
+  //   return cities;
+  // }, [formData.location.counties]);
 
   // ---------- ✅ Global county/city selection handlers ----------
-  const toggleGlobalCounty = (county: string) => {
-    setFormData(prev => {
-      const curr = prev.location.counties || [];
-      const nextCounties = curr.includes(county) ? curr.filter(c => c !== county) : [...curr, county];
+  // const toggleGlobalCounty = (county: string) => {
+  //   setFormData(prev => {
+  //     const curr = prev.location.counties || [];
+  //     const nextCounties = curr.includes(county) ? curr.filter(c => c !== county) : [...curr, county];
 
-      // sanitize cities based on nextCounties
-      if (nextCounties.length === 0) {
-        return { ...prev, location: { counties: [], cities: [] } };
-      }
+  //     // sanitize cities based on nextCounties
+  //     if (nextCounties.length === 0) {
+  //       return { ...prev, location: { counties: [], cities: [] } };
+  //     }
 
-      const citySet = new Set<string>();
-      for (const c of nextCounties) {
-        const list = CITIES_BY_COUNTY[c] || CITIES_BY_COUNTY['default'] || [];
-        for (const city of list) citySet.add(city);
-      }
+  //     const citySet = new Set<string>();
+  //     for (const c of nextCounties) {
+  //       const list = CITIES_BY_COUNTY[c] || CITIES_BY_COUNTY['default'] || [];
+  //       for (const city of list) citySet.add(city);
+  //     }
 
-      const currCities = prev.location.cities || [];
-      const keepAllCities = currCities.includes(ALL_CITIES_OPTION);
+  //     const currCities = prev.location.cities || [];
+  //     const keepAllCities = currCities.includes(ALL_CITIES_OPTION);
 
-      const nextCities = keepAllCities
-        ? [ALL_CITIES_OPTION]
-        : currCities.filter(city => citySet.has(city));
+  //     const nextCities = keepAllCities
+  //       ? [ALL_CITIES_OPTION]
+  //       : currCities.filter(city => citySet.has(city));
 
-      return {
-        ...prev,
-        location: {
-          counties: nextCounties,
-          cities: nextCities,
-        },
-      };
-    });
-  };
+  //     return {
+  //       ...prev,
+  //       location: {
+  //         counties: nextCounties,
+  //         cities: nextCities,
+  //       },
+  //     };
+  //   });
+  // };
 
-  const toggleGlobalCity = (city: string) => {
-    setFormData(prev => {
-      const curr = prev.location.cities || [];
-      const next = toggleExclusiveMultiSelect(curr, city, ALL_CITIES_OPTION);
+  // const toggleGlobalCity = (city: string) => {
+  //   setFormData(prev => {
+  //     const curr = prev.location.cities || [];
+  //     const next = toggleExclusiveMultiSelect(curr, city, ALL_CITIES_OPTION);
 
-      return {
-        ...prev,
-        location: {
-          ...prev.location,
-          cities: next,
-        },
-      };
-    });
-  };
+  //     return {
+  //       ...prev,
+  //       location: {
+  //         ...prev.location,
+  //         cities: next,
+  //       },
+  //     };
+  //   });
+  // };
 
-  // ✅ When derived scope changes, drop invalid counties/cities automatically
-  useEffect(() => {
-    if (!derivedLocationScope) return;
+  // // ✅ When derived scope changes, drop invalid counties/cities automatically
+  // useEffect(() => {
+  //   if (!derivedLocationScope) return;
 
-    setFormData(prev => {
-      const nextCounties = (prev.location.counties || []).filter(c => allowedCounties.includes(c));
+  //   setFormData(prev => {
+  //     const nextCounties = (prev.location.counties || []).filter(c => allowedCounties.includes(c));
 
-      // rebuild allowed city set from nextCounties
-      const citySet = new Set<string>();
-      for (const c of nextCounties) {
-        const list = CITIES_BY_COUNTY[c] || CITIES_BY_COUNTY['default'] || [];
-        for (const city of list) citySet.add(city);
-      }
+  //     // rebuild allowed city set from nextCounties
+  //     const citySet = new Set<string>();
+  //     for (const c of nextCounties) {
+  //       const list = CITIES_BY_COUNTY[c] || CITIES_BY_COUNTY['default'] || [];
+  //       for (const city of list) citySet.add(city);
+  //     }
 
-      let nextCities = prev.location.cities || [];
+  //     let nextCities = prev.location.cities || [];
 
-      // if no counties, must clear cities
-      if (nextCounties.length === 0) nextCities = [];
+  //     // if no counties, must clear cities
+  //     if (nextCounties.length === 0) nextCities = [];
 
-      // keep All Cities if selected + counties exist
-      if (nextCities.includes(ALL_CITIES_OPTION)) {
-        nextCities = nextCounties.length > 0 ? [ALL_CITIES_OPTION] : [];
-      } else {
-        nextCities = nextCities.filter(city => citySet.has(city));
-      }
+  //     // keep All Cities if selected + counties exist
+  //     if (nextCities.includes(ALL_CITIES_OPTION)) {
+  //       nextCities = nextCounties.length > 0 ? [ALL_CITIES_OPTION] : [];
+  //     } else {
+  //       nextCities = nextCities.filter(city => citySet.has(city));
+  //     }
 
-      // no changes
-      const sameCounties =
-        nextCounties.length === (prev.location.counties || []).length &&
-        nextCounties.every((c, i) => c === (prev.location.counties || [])[i]);
+  //     // no changes
+  //     const sameCounties =
+  //       nextCounties.length === (prev.location.counties || []).length &&
+  //       nextCounties.every((c, i) => c === (prev.location.counties || [])[i]);
 
-      const sameCities =
-        nextCities.length === (prev.location.cities || []).length &&
-        nextCities.every((c, i) => c === (prev.location.cities || [])[i]);
+  //     const sameCities =
+  //       nextCities.length === (prev.location.cities || []).length &&
+  //       nextCities.every((c, i) => c === (prev.location.cities || [])[i]);
 
-      if (sameCounties && sameCities) return prev;
+  //     if (sameCounties && sameCities) return prev;
 
-      return {
-        ...prev,
-        location: {
-          counties: nextCounties,
-          cities: nextCities,
-        },
-      };
-    });
-  }, [derivedLocationScope, allowedCounties]);
+  //     return {
+  //       ...prev,
+  //       location: {
+  //         counties: nextCounties,
+  //         cities: nextCities,
+  //       },
+  //     };
+  //   });
+  // }, [derivedLocationScope, allowedCounties]);
 
   // ---------- ✅ Validation ----------
   const isFormValid = useMemo(() => {
@@ -426,6 +496,13 @@ const App: React.FC = () => {
 
       // a) property-level location option required (All Florida/South Florida)
       if (!p.location?.scope) return false;
+
+      if (p.location.scope === 'counties' && (!p.location.counties || p.location.counties.length === 0))
+        return false;
+
+      if (p.location.scope === 'cities' && (!p.location.cities || p.location.cities.length === 0))
+        return false;
+
 
       // b) subtype required for multi/condo/land/commercial
       if (requiresSubtype(key)) {
@@ -452,18 +529,21 @@ const App: React.FC = () => {
       return true;
     });
 
-    // global derived scope must exist (only when all property scopes picked)
-    if (!derivedLocationScope) return false;
+    // // global derived scope must exist (only when all property scopes picked)
+    // if (!derivedLocationScope) return false;
 
-    // global counties + cities required
-    const isGlobalLocationValid =
-      Array.isArray(location.counties) &&
-      location.counties.length > 0 &&
-      Array.isArray(location.cities) &&
-      location.cities.length > 0;
+    // // global counties + cities required
+    // const isGlobalLocationValid =
+    //   Array.isArray(location.counties) &&
+    //   location.counties.length > 0 &&
+    //   Array.isArray(location.cities) &&
+    //   location.cities.length > 0;
 
-    return isContactValid && areEnabledPropertiesValid && isGlobalLocationValid;
-  }, [formData, enabledKeys, derivedLocationScope]);
+    // return isContactValid && areEnabledPropertiesValid && isGlobalLocationValid;
+
+    return isContactValid && areEnabledPropertiesValid;
+
+  }, [formData, enabledKeys]);
 
   const formStatusSummary = useMemo(() => {
     const { contact, properties, location } = formData;
@@ -488,6 +568,13 @@ const App: React.FC = () => {
 
         if (!p.location?.scope) steps.push(`Select Location Option for ${config.title}`);
 
+        if (p.location?.scope === 'counties' && (!p.location.counties || p.location.counties.length === 0))
+          steps.push(`Select at least 1 County for ${config.title}`);
+
+        if (p.location?.scope === 'cities' && (!p.location.cities || p.location.cities.length === 0))
+          steps.push(`Select at least 1 City for ${config.title}`);
+
+
         if (requiresSubtype(key) && (!Array.isArray(p.type) || p.type.length === 0))
   steps.push(`Select Property Type for ${config.title}`);
 
@@ -508,15 +595,16 @@ const App: React.FC = () => {
       });
     }
 
-    if (!derivedLocationScope) {
-      steps.push('Select All Florida/South Florida in each selected Property Type');
-    } else {
-      if (!location.counties || location.counties.length === 0) steps.push('Select at least 1 County');
-      if (!location.cities || location.cities.length === 0) steps.push('Select at least 1 City');
-    }
+    // if (!derivedLocationScope) {
+    //   steps.push('Select All Florida/South Florida in each selected Property Type');
+    // } else {
+    //   if (!location.counties || location.counties.length === 0) steps.push('Select at least 1 County');
+    //   if (!location.cities || location.cities.length === 0) steps.push('Select at least 1 City');
+    // }
+    
 
     return steps;
-  }, [formData, enabledKeys, derivedLocationScope]);
+  }, [formData, enabledKeys]);
 
   const API_BASE_URL =
     (import.meta as any).env?.VITE_API_BASE_URL ||
@@ -537,11 +625,11 @@ const App: React.FC = () => {
       // ✅ Final payload includes derived global location scope
       const payload = {
         ...formData,
-        location: {
-          scope: derivedLocationScope,
-          counties: formData.location.counties,
-          cities: formData.location.cities,
-        },
+        // location: {
+        //   scope: derivedLocationScope,
+        //   counties: formData.location.counties,
+        //   cities: formData.location.cities,
+        // },
       };
 
       console.log('Submitting API Payload:', JSON.stringify(payload, null, 2));
@@ -1304,12 +1392,162 @@ const commercialOtherMissing =
                                     }`}
                                   >
                                     <option value="">-- Select Location --</option>
-                                    {LOCATION_OPTIONS.map(opt => (
+                                    {PROPERTY_LOCATION_OPTIONS.map(opt => (
                                       <option key={opt.value} value={opt.value}>
                                         {opt.label}
                                       </option>
                                     ))}
                                   </select>
+
+                                  {/* ✅ Counties selection (per property) */}
+                                  {state.location.scope === 'counties' && (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                      <label
+                                        className={`text-[10px] font-black uppercase tracking-[0.3em] ${
+                                          isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                                        }`}
+                                      >
+                                        Counties* <span className="ml-2 text-[9px] opacity-70">(multi-select)</span>
+                                      </label>
+
+                                      <div
+                                        className={`p-2 rounded-2xl border transition-all ${
+                                          isDarkMode
+                                            ? 'bg-slate-800 border-slate-700 shadow-inner'
+                                            : 'bg-white border-slate-200 shadow-sm'
+                                        } max-h-80 overflow-y-auto`}
+                                      >
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+                                          {COUNTIES.map(c => (
+                                            <label key={c} className="relative w-full">
+                                              <input
+                                                type="checkbox"
+                                                checked={(state.location.counties || []).includes(c)}
+                                                onChange={() => togglePropertyCounty(key, c)}
+                                                className="sr-only peer"
+                                              />
+                                              <div
+                                                className={`px-3 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center
+                                                peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl
+                                                ${isDarkMode ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
+                                              >
+                                                {c}
+                                              </div>
+                                            </label>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* ✅ Cities selection (per property) */}
+                                  {state.location.scope === 'cities' && (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                      <label
+                                        className={`text-[10px] font-black uppercase tracking-[0.3em] ${
+                                          isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                                        }`}
+                                      >
+                                        Cities* <span className="ml-2 text-[9px] opacity-70">(multi-select)</span>
+                                      </label>
+
+                                      {/* Search */}
+                                      <input
+                                        type="text"
+                                        value={citySearch[key] || ''}
+                                        onChange={e => setCitySearch(prev => ({ ...prev, [key]: e.target.value }))}
+                                        placeholder="Search city..."
+                                        className={`w-full px-6 py-4 rounded-2xl border-2 transition-all outline-none focus:ring-4 ${
+                                          isDarkMode
+                                            ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/20'
+                                            : 'bg-slate-50 border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200 focus:bg-white'
+                                        }`}
+                                      />
+
+                                      {/* Selected summary */}
+                                      <p className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} text-[11px] font-bold`}>
+                                        {(state.location.cities || []).length} cities selected
+                                        {(state.location.cities || []).length > 0 ? (
+                                          <span className="font-black">
+                                            {`, i.e. ${(state.location.cities || []).slice(0, 12).join(', ')}${
+                                              (state.location.cities || []).length > 12 ? '…' : ''
+                                            }`}
+                                          </span>
+                                        ) : null}
+                                      </p>
+
+                                      {/* Dropdown list grouped by county */}
+                                      <div
+                                        className={`p-2 rounded-2xl border transition-all ${
+                                          isDarkMode
+                                            ? 'bg-slate-800 border-slate-700 shadow-inner'
+                                            : 'bg-white border-slate-200 shadow-sm'
+                                        } max-h-96 overflow-y-auto`}
+                                      >
+                                        {(() => {
+                                          const q = (citySearch[key] || '').trim().toLowerCase();
+                                          const entries = Object.entries(CITIES_BY_COUNTY).filter(([county]) => county !== 'default');
+
+                                          // Build grouped filtered list
+                                          const groups = entries
+                                            .map(([county, cities]) => {
+                                              const filtered = (cities || []).filter(city => {
+                                                if (!city || city === 'All Cities') return false;
+                                                if (!q) return true;
+                                                return city.toLowerCase().includes(q);
+                                              });
+                                              return { county, cities: filtered };
+                                            })
+                                            .filter(g => g.cities.length > 0);
+
+                                          if (groups.length === 0) {
+                                            return (
+                                              <p className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} text-[11px] font-bold p-4`}>
+                                                No matching cities found.
+                                              </p>
+                                            );
+                                          }
+
+                                          return (
+                                            <div className="space-y-4">
+                                              {groups.map(g => (
+                                                <div key={g.county} className="space-y-2">
+                                                  <div
+                                                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${
+                                                      isDarkMode ? 'bg-slate-900/50 text-slate-300' : 'bg-slate-50 text-slate-700'
+                                                    }`}
+                                                  >
+                                                    {g.county} County
+                                                  </div>
+
+                                                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+                                                    {g.cities.map(city => (
+                                                      <label key={`${g.county}-${city}`} className="relative w-full">
+                                                        <input
+                                                          type="checkbox"
+                                                          checked={(state.location.cities || []).includes(city)}
+                                                          onChange={() => togglePropertyCity(key, city)}
+                                                          className="sr-only peer"
+                                                        />
+                                                        <div
+                                                          className={`px-3 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center
+                                                          peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl
+                                                          ${isDarkMode ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
+                                                        >
+                                                          {city}
+                                                        </div>
+                                                      </label>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                    </div>
+                                  )}
+
                                   <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-blue-600">
                                     <ArrowRight size={20} />
                                   </div>
@@ -1425,210 +1663,7 @@ const commercialOtherMissing =
               </div>
             </section>
 
-            {/* ✅ FINAL LOCATION SECTION (GLOBAL counties + cities) */}
-            <section className="space-y-10">
-              <div className="flex items-center gap-4 px-2">
-                <div className="w-10 h-10 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-600/20">
-                  <MapPin size={20} />
-                </div>
-                <h3
-                  className={`text-2xl font-black tracking-tight uppercase ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  Location Details (Counties & Cities)
-                </h3>
-              </div>
 
-              <div
-                className={`p-10 md:p-14 rounded-[3.5rem] shadow-xl ${
-                  isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'
-                } border-2 space-y-10`}
-              >
-                {!derivedLocationScope ? (
-                  <div
-                    className={`p-6 rounded-3xl border-2 flex gap-5 items-start ${
-                      isDarkMode
-                        ? 'bg-amber-900/10 border-amber-800/30'
-                        : 'bg-amber-50/50 border-amber-100'
-                    }`}
-                  >
-                    <AlertCircle className="text-amber-500 w-6 h-6 shrink-0 mt-0.5" />
-                    <p
-                      className={`text-sm leading-relaxed ${
-                        isDarkMode ? 'text-amber-200' : 'text-amber-900/80'
-                      }`}
-                    >
-                      Select <span className="font-black">All Florida</span> or{' '}
-                      <span className="font-black">South Florida</span> in each selected property type first.
-                      Then the correct county/city list will show here.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      className={`p-6 rounded-3xl border-2 ${
-                        isDarkMode
-                          ? 'bg-emerald-900/10 border-emerald-800/30'
-                          : 'bg-emerald-50/50 border-emerald-100'
-                      }`}
-                    >
-                      <p
-                        className={`text-[11px] font-black uppercase tracking-[0.2em] ${
-                          isDarkMode ? 'text-emerald-200' : 'text-emerald-900/80'
-                        }`}
-                      >
-                        Location Scope Selected:
-                        <span className="ml-2 underline">
-                          {derivedLocationScope === 'all_florida' ? 'All Florida' : 'South Florida'}
-                        </span>
-                      </p>
-                      <p
-                        className={`text-[11px] font-bold mt-2 ${
-                          isDarkMode ? 'text-emerald-200/80' : 'text-emerald-900/70'
-                        }`}
-                      >
-                        This is derived from your property selections:
-                        <span className="font-black">
-                          {' '}
-                          if ANY property is All Florida → All Florida is used globally.
-                        </span>
-                      </p>
-                    </div>
-
-                    {/* Counties */}
-                    <div className="space-y-4">
-                      <label
-                        className={`text-[10px] font-black uppercase tracking-[0.3em] ${
-                          isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                      >
-                        Counties* <span className="ml-2 text-[9px] opacity-70">(multi-select)</span>
-                      </label>
-
-                      <div
-                        className={`p-2 rounded-2xl border transition-all ${
-                          isDarkMode
-                            ? 'bg-slate-800 border-slate-700 shadow-inner'
-                            : 'bg-white border-slate-200 shadow-sm'
-                        } max-h-80 overflow-y-auto`}
-                      >
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-                          {allowedCounties.map(c => (
-                            <label key={c} className="relative w-full">
-                              <input
-                                type="checkbox"
-                                checked={formData.location.counties.includes(c)}
-                                onChange={() => toggleGlobalCounty(c)}
-                                className="sr-only peer"
-                              />
-                              <div
-                                className={`px-3 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center
-                                peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl
-                                ${isDarkMode ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
-                              >
-                                {c}
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Cities */}
-                    <div className="space-y-4">
-                      <label
-                        className={`text-[10px] font-black uppercase tracking-[0.3em] ${
-                          isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                      >
-                        Cities* <span className="ml-2 text-[9px] opacity-70">(multi-select)</span>
-                      </label>
-
-                      {formData.location.counties.length === 0 ? (
-                        <div
-                          className={`p-6 rounded-3xl border-2 ${
-                            isDarkMode
-                              ? 'bg-slate-900/40 border-slate-700'
-                              : 'bg-slate-50 border-slate-100'
-                          }`}
-                        >
-                          <p
-                            className={`text-[11px] font-bold ${
-                              isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                            }`}
-                          >
-                            Select at least 1 county to unlock city selection.
-                          </p>
-                        </div>
-                      ) : (
-                        <div
-                          className={`p-2 rounded-2xl border transition-all ${
-                            isDarkMode
-                              ? 'bg-slate-800 border-slate-700 shadow-inner'
-                              : 'bg-white border-slate-200 shadow-sm'
-                          } max-h-80 overflow-y-auto`}
-                        >
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-                            {availableCities.map(city => (
-                              <label key={city} className="relative w-full">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.location.cities.includes(city)}
-                                  onChange={() => toggleGlobalCity(city)}
-                                  className="sr-only peer"
-                                />
-                                <div
-                                  className={`px-3 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center
-                                  peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl
-                                  ${isDarkMode ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-900'}`}
-                                >
-                                  {city}
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <p
-                        className={`text-[10px] font-bold italic ${
-                          isDarkMode ? 'text-slate-500' : 'text-slate-400'
-                        }`}
-                      >
-                        Selecting “All Cities” will automatically deselect other cities.
-                      </p>
-                    </div>
-
-                    {/* Global warning */}
-                    {(formData.location.counties.length === 0 || formData.location.cities.length === 0) && (
-                      <div
-                        className={`p-6 rounded-3xl border-2 flex gap-5 items-start ${
-                          isDarkMode
-                            ? 'bg-amber-900/10 border-amber-800/30'
-                            : 'bg-amber-50/50 border-amber-100'
-                        }`}
-                      >
-                        <AlertCircle className="text-amber-500 w-6 h-6 shrink-0 mt-0.5" />
-                        <div
-                          className={`text-sm leading-relaxed ${
-                            isDarkMode ? 'text-amber-200' : 'text-amber-900/80'
-                          }`}
-                        >
-                          <p className="font-black uppercase tracking-wider underline mb-2">
-                            Required for submission:
-                          </p>
-                          <ul className="text-[12px] font-bold space-y-1">
-                            {formData.location.counties.length === 0 && <li>• Select at least 1 County</li>}
-                            {formData.location.cities.length === 0 && <li>• Select at least 1 City</li>}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </section>
 
             {/* Submission Area */}
             <section className="pt-16">

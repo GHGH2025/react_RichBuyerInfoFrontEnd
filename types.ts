@@ -99,7 +99,8 @@
 
 export type PreferenceValue = 'No' | 'Yes' | 'Maybe' | 'Only';
 
-export type LocationScope = 'all_florida' | 'south_florida';
+// ✅ UPDATED: now includes counties + cities modes
+export type LocationScope = 'all_florida' | 'south_florida' | 'counties' | 'cities';
 
 export type CommunicationPreference = 'Text' | 'Email' | 'WhatsApp' | 'Call';
 
@@ -125,7 +126,11 @@ export interface PropertyTypeState {
   beds: string[];
   baths: string[];
 
-  location: { scope: '' | LocationScope };
+  location: {
+    scope: '' | LocationScope;
+    counties: string[];
+    cities: string[];
+  };
 
   preferences: Record<string, PreferenceValue>;
 
@@ -150,5 +155,5 @@ export interface AppState {
     townhouse: PropertyTypeState;
   };
 
-  location: GlobalLocationState;
+  // location: GlobalLocationState;
 }

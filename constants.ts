@@ -249,6 +249,12 @@ export const PRICE_RANGES_CONDO_TH = [
   "$600,000 - $1,000,000"
 ];
 
+export const PROPERTY_LOCATION_OPTIONS = [
+  { value: "all_florida", label: "All Florida" },
+  { value: "south_florida", label: "South Florida" },
+  { value: "counties", label: "Counties" },
+  { value: "cities", label: "Cities" },
+] as const;
 
 export const PROPERTY_CONFIG = {
    singleFamily: {
