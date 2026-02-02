@@ -665,32 +665,137 @@ const App: React.FC = () => {
     setIsSubmitting(true);
   };
 
+  // if (isSubmitted) {
+  //   return (
+  //     <div
+  //       className={`min-h-screen ${
+  //         isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'
+  //       } flex items-center justify-center p-6`}
+  //     >
+  //       <div className="max-w-lg w-full bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl p-12 text-center border-2 border-slate-100 dark:border-slate-700">
+  //         <div className="w-24 h-24 bg-blue-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
+  //           <ShieldCheck className="text-white w-12 h-12" />
+  //         </div>
+  //         <h2 className="text-4xl font-black mb-4 tracking-tight uppercase">Confirmed</h2>
+  //         <p className="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed font-bold">
+  //           Your investment preferences have been synced with our system. A representative from So.
+  //           Florida Home Buyers LLC will contact you soon.
+  //         </p>
+  //         <button
+  //           onClick={() => window.location.reload()}
+  //           className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95"
+  //         >
+  //           Send new preferences
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
   if (isSubmitted) {
-    return (
-      <div
-        className={`min-h-screen ${
-          isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'
-        } flex items-center justify-center p-6`}
-      >
-        <div className="max-w-lg w-full bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl p-12 text-center border-2 border-slate-100 dark:border-slate-700">
-          <div className="w-24 h-24 bg-blue-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
-            <ShieldCheck className="text-white w-12 h-12" />
-          </div>
-          <h2 className="text-4xl font-black mb-4 tracking-tight uppercase">Confirmed</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed font-bold">
-            Your investment preferences have been synced with our system. A representative from So.
-            Florida Home Buyers LLC will contact you soon.
+  return (
+    <div
+      className={`min-h-screen ${
+        isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'
+      } flex items-center justify-center p-6`}
+    >
+      <div className="max-w-3xl w-full bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl p-10 md:p-14 text-center border-2 border-slate-100 dark:border-slate-700">
+        {/* Icon */}
+        {/* <div className="w-24 h-24 bg-blue-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
+          <ShieldCheck className="text-white w-12 h-12" />
+        </div> */}
+
+        {/* Headline */}
+        <div className="mb-10 space-y-2">
+          <p className="text-sm md:text-base font-extrabold tracking-widest uppercase text-slate-600 dark:text-slate-200">
+            Welcome to
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95"
-          >
-            Send new preferences
-          </button>
+
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase text-slate-900 dark:text-white drop-shadow-sm">
+            WholesaleDealFinder.Ai
+          </h2>
         </div>
+
+
+        <p className="text-lg md:text-xl font-extrabold mb-10 text-slate-600 dark:text-slate-300">
+          It&apos;s Time to Reclaim Your Time!
+        </p>
+
+        {/* Body */}
+        <div className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300 leading-relaxed space-y-6">
+          <p className="text-xl font-black text-slate-900 dark:text-white">
+            Let Our Ai Do <span className="uppercase">ALL</span> the work for you.
+          </p>
+
+          <p className="font-bold">
+            Stop Scrolling, Stop Scanning — &amp; Start Receiving.
+          </p>
+
+          <div className="pt-2">
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+              What to Expect Next?
+            </h3>
+
+            <div className="space-y-5 text-left md:text-center">
+              <div>
+                <p className="font-black text-slate-900 dark:text-white">
+                  — Look Out for an Email &amp; Text from us —
+                </p>
+                <p className="mt-2">
+                  This is where you will get a chance to customize your Ai further.
+                  <br />
+                  This is not a necessary step, but a special Ai feature we offer you.
+                  <br />
+                  This is where you can fully replace your job of looking for deals — and let the Ai do the work for you!
+                </p>
+              </div>
+
+              <div>
+                <p className="font-black text-slate-900 dark:text-white">
+                  — Look Out for Deals —
+                </p>
+                <p className="mt-2">
+                  24/7 Our Ai will be on the hunt looking for deals for you,
+                  sending them only to your preferred communication preferences.
+                </p>
+              </div>
+
+              <div>
+                <p className="font-black text-slate-900 dark:text-white">
+                  — Updating Your Buy Box —
+                </p>
+                <p className="mt-2">
+                  If you ever need to update your Buy Box, visit our website.
+                  <br />
+                  Go to the dropdown menu. Choose — <span className="font-black">Update My Buy Box</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6">
+            <p className="text-xl font-black text-slate-900 dark:text-white">
+              The Future of Finding Wholesale Deals Begins Now!
+            </p>
+            <p className="text-2xl font-black mt-3 text-slate-900 dark:text-white">
+              Welcome!
+            </p>
+
+            <div className="mt-6 font-bold">
+              <p>Richard Burdette, Founder</p>
+              <p className="font-black uppercase">WholesaleDealFinder.Ai</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Optional footer note (small) */}
+        <p className="mt-10 text-xs font-semibold text-slate-400 dark:text-slate-500">
+          You may now close this page.
+        </p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className={`${isDarkMode ? 'dark' : ''}`}>
