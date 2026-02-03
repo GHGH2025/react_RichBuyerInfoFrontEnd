@@ -19,6 +19,7 @@ import {
   Smartphone,
   ShieldCheck,
   MapPin,
+  LayoutGrid
 } from 'lucide-react';
 import {
   AppState,
@@ -918,7 +919,7 @@ const App: React.FC = () => {
                       platform and dial in results.
                       <br />
                       <br />
-                      The first <span className="font-black">300 users</span> get full access at no
+                      The first <span className="font-black">50 users</span> get full access at no
                       cost during beta.
                       <br />
                       <br />
@@ -950,7 +951,7 @@ const App: React.FC = () => {
                           isDarkMode ? 'text-white' : 'text-slate-900'
                         }`}
                       >
-                        Special Notes & Direction
+                        Special Notes & Directions
                       </h2>
                       <p
                         className={`text-sm font-bold ${
@@ -986,7 +987,7 @@ const App: React.FC = () => {
                     )}
                   </div>
 
-                  <div
+                  {/* <div
                     className={`p-6 rounded-3xl border-2 flex gap-5 items-start ${
                       isDarkMode
                         ? 'bg-amber-900/10 border-amber-800/30'
@@ -1008,7 +1009,7 @@ const App: React.FC = () => {
                       send you properties that match that specific preference. The AI will NOT stack{' '}
                       <span className="italic underline">ONLY</span> requests.
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </section>
@@ -1165,12 +1166,12 @@ const App: React.FC = () => {
                     key === 'condo' || key === 'townhouse' ? PRICE_RANGES_CONDO_TH : PRICE_RANGES_DEFAULT;
 
                   const Icon = {
-                    multiFamily: Layout,
+                    multiFamily: Building2,
                     condo: Waves,
                     land: Trees,
                     commercial: Store,
                     singleFamily: Home,
-                    townhouse: Building2,
+                    townhouse: LayoutGrid,
                   }[key];
 
                   const locationScopeMissing = state.enabled && !state.location?.scope;
@@ -1496,7 +1497,7 @@ const commercialOtherMissing =
                                         : 'bg-white border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200'
                                     }`}
                                   >
-                                    <option value="">-- Select Location --</option>
+                                    <option value="">-- Choose Your Counties/Cities --</option>
                                     {PROPERTY_LOCATION_OPTIONS.map(opt => (
                                       <option key={opt.value} value={opt.value}>
                                         {opt.label}

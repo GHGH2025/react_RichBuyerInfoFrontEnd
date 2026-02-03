@@ -297,7 +297,7 @@ export const PROPERTY_CONFIG = {
       "Property is Fire Damaged",
       "Need to Buy Property Sight Unseen (Bad Tenants, Other Access Issues) - Videos or Pictures might be available case by case.",
       "Frame Construction",
-      "Mold Remediation Needed",
+      // "Mold Remediation Needed",
       "Property has Foundation / Structural Issues",
       "40/10 Year Inspection Certificate Failed",
 "40/10 Year Inspection Certificate Passed"
@@ -323,14 +323,14 @@ export const PROPERTY_CONFIG = {
       "Located on Ocean Access / Intracoastal Way Only",
       "Located on Water Front Only",
       "Located on Golf Course Only",
-      "40 year inspection failed",
+      "40 Year Inspection Failed",
       "NO HOA"
     ]
   },
   land: {
     title: "Land",
     options: [
-      "Tear-down houses/buildings",
+      "Tear-down houses/ buildings/ land value",
       "Single Family Residential",
       "Commercial",
       "Zoned Multi family",
@@ -339,7 +339,7 @@ export const PROPERTY_CONFIG = {
       "Agriculture",
       "Industrial",
       "Special Use - Please describe below)",
-      "Tear-downs / land value only"
+      // "Tear-downs / land value only"
     ],
     prefs: [
       "Property has Code Violations / Liens / Fines",
@@ -382,19 +382,19 @@ export const PROPERTY_CONFIG = {
       "Property is Fire Damaged",
       "Need to Buy Property Sight Unseen (Bad Tenants, Other Access Issues) - Videos or Pictures might be available case by case.",
       "Property with Ocean Access / Intracoastal",
-      "$1 Million Dollar Houses and Up",
+      // "$1 Million Dollar Houses and Up",
       "55 Plus Communities",
       "Frame Construction",
       "Bulk Property Packages",
       "Mold Remediation Needed",
       "Property has Foundation / Structural Issues",
+      "Water/ Flood Damage",
+      // "Tear-downs / land value only",
+      "Unpermitted additions",
+      "Eviction Needed/ In Progress",
+      "Post Occupancy Required (with escrow holdback and/ or rent)",
        "Pool",
-"Garage",
-"Water/ Flood Damage",
-"Tear-downs / land value only",
-"Unpermitted additions",
-"Eviction Needed/ In Progress",
-"Post Occupancy Required (with escrow holdback and/ or rent)"
+      "Garage"
     ]
   }
 };
