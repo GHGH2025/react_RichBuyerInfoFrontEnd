@@ -1654,9 +1654,9 @@ const commercialOtherMissing =
                                     </div>
                                   )}
 
-                                  <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-blue-600">
+                                  {/* <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-blue-600">
                                     <ArrowRight size={20} />
-                                  </div>
+                                  </div> */}
                                 </div>
                               </div>
                             </div>
