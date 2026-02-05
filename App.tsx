@@ -180,25 +180,90 @@ const App: React.FC = () => {
     }));
   };
 
-  const updatePreference = (
-    key: keyof AppState['properties'],
-    prefKey: string,
-    value: PreferenceValue
-  ) => {
-    setFormData(prev => ({
+  // const updatePreference = (
+  //   key: keyof AppState['properties'],
+  //   prefKey: string,
+  //   value: PreferenceValue
+  // ) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     properties: {
+  //       ...prev.properties,
+  //       [key]: {
+  //         ...prev.properties[key],
+  //         preferences: {
+  //           ...prev.properties[key].preferences,
+  //           [prefKey]: value,
+  //         },
+  //       },
+  //     },
+  //   }));
+  // };
+
+
+// for only and yes logic
+const updatePreference = (
+  key: keyof AppState['properties'],
+  prefKey: string,
+  value: PreferenceValue
+) => {
+  setFormData(prev => {
+    const currentPrefs = prev.properties[key].preferences || {};
+    const currentVal = currentPrefs[prefKey];
+
+    // ✅ Uncheck: clicking the same selected option again removes it
+    if (currentVal === value) {
+      const nextPrefs = { ...currentPrefs };
+      delete nextPrefs[prefKey];
+
+      return {
+        ...prev,
+        properties: {
+          ...prev.properties,
+          [key]: {
+            ...prev.properties[key],
+            preferences: nextPrefs,
+          },
+        },
+      };
+    }
+
+    const isOnlyActive = Object.values(currentPrefs).includes('Only');
+
+    // ✅ If ANY "Only" exists, block selecting "Yes"
+    if (value === 'Yes' && isOnlyActive) {
+      return prev; // UI also disables
+    }
+
+    // ✅ Next preferences
+    let nextPrefs: Record<string, PreferenceValue> = {
+      ...currentPrefs,
+      [prefKey]: value,
+    };
+
+    // ✅ If selecting "Only":
+    // - Clear ALL "Yes" for this property type
+    // - DO NOT clear other "Only" (allow multiple Only)
+    if (value === 'Only') {
+      for (const k of Object.keys(nextPrefs)) {
+        if (nextPrefs[k] === 'Yes') delete nextPrefs[k];
+      }
+      nextPrefs[prefKey] = 'Only';
+    }
+
+    return {
       ...prev,
       properties: {
         ...prev.properties,
         [key]: {
           ...prev.properties[key],
-          preferences: {
-            ...prev.properties[key].preferences,
-            [prefKey]: value,
-          },
+          preferences: nextPrefs,
         },
       },
-    }));
-  };
+    };
+  });
+};
+
 
   // const updatePropertyLocationScope = (key: keyof AppState['properties'], scope: '' | LocationScope) => {
   //   setFormData(prev => ({
@@ -1662,71 +1727,137 @@ const commercialOtherMissing =
                             </div>
 
                             {/* Special Preferences Matrix (non-commercial only) */}
-                            {!isCommercial && (
-                              <div className="space-y-10 transition-all duration-700">
-                                <div className="flex items-center gap-5">
-                                  <h5
-                                    className={`text-[10px] font-black uppercase tracking-[0.4em] ${
-                                      isDarkMode ? 'text-blue-400' : 'text-blue-800'
-                                    }`}
-                                  >
-                                    Special Preferences Matrix
-                                  </h5>
-                                  <div className="h-0.5 flex-1 bg-blue-600/10"></div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-6">
-                                  {config.prefs.map(pref => (
-                                    <div
-                                      key={pref}
-                                      className={`group p-6 md:p-8 rounded-[2.5rem] flex flex-col xl:flex-row xl:items-center justify-between gap-6 transition-all border-2 ${
-                                        isDarkMode
-                                          ? 'bg-slate-900/40 border-slate-700'
-                                          : 'bg-[#FAFBFF] border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-2xl'
-                                      }`}
-                                    >
-                                      <span
-                                        className={`text-sm font-bold leading-relaxed max-w-xl ${
-                                          isDarkMode ? 'text-slate-200' : 'text-slate-900'
-                                        }`}
-                                      >
-                                        {pref}
-                                      </span>
-                                      <div
-                                        className={`grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 md:p-2 rounded-2xl border transition-all ${
-                                          isDarkMode
-                                            ? 'bg-slate-800 border-slate-700 shadow-inner'
-                                            : 'bg-white border-slate-200 shadow-sm'
-                                        }`}
-                                      >
-                                        {['No', 'Yes', 'Maybe', 'Only'].map(val => (
-                                          <label key={val} className="relative w-full">
-                                            <input
-                                              type="radio"
-                                              name={`${key}-${pref}`}
-                                              value={val}
-                                              checked={state.preferences[pref] === val}
-                                              onChange={() =>
-                                                updatePreference(key, pref, val as PreferenceValue)
-                                              }
-                                              className="sr-only peer"
-                                            />
-                                            <div
-                                              className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-center peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl ${
-                                                isDarkMode
-                                                  ? 'text-slate-500 hover:text-slate-200'
-                                                  : 'text-slate-400 hover:text-slate-900'
-                                              }`}
-                                            >
-                                              {val}
-                                            </div>
-                                          </label>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                         {/* Special Preferences Matrix (non-commercial only) */}
+{!isCommercial && (() => {
+  const prefsObj = state.preferences || {};
+  const isOnlyActive = Object.values(prefsObj).includes('Only');
+
+
+  return (
+    <div className="space-y-10 transition-all duration-700">
+      <div className="flex items-center gap-5">
+        <h5
+          className={`text-[10px] font-black uppercase tracking-[0.4em] ${
+            isDarkMode ? 'text-blue-400' : 'text-blue-800'
+          }`}
+        >
+          Special Preferences Matrix
+        </h5>
+        <div className="h-0.5 flex-1 bg-blue-600/10"></div>
+      </div>
+
+      {/* ✅ Directions Card */}
+      <div
+        className={`p-6 rounded-3xl border-2 flex gap-5 items-start ${
+          isDarkMode
+            ? 'bg-blue-900/10 border-blue-800/30'
+            : 'bg-blue-50/60 border-blue-100'
+        }`}
+      >
+        <Info className="text-blue-500 w-6 h-6 shrink-0 mt-0.5" />
+
+        <div
+          className={`text-sm leading-relaxed ${
+            isDarkMode ? 'text-blue-200' : 'text-blue-900/80'
+          }`}
+        >
+          <p className="font-black uppercase tracking-wider underline mb-2">
+  Quick Rule for “Only”
+</p>
+
+<p className="text-[12px] font-bold">
+  For each property type, you can do one of these:
+  <br />
+  <span className="font-black">• Pick multiple “Yes”</span> preferences, or
+  <br />
+  <span className="font-black">• Pick one or more “Only”</span> preferences.
+  <br />
+  <br />
+  If you select <span className="font-black">“Only”</span>, we will automatically:
+  <br />
+  <span className="font-black">1)</span> Remove any previously selected <span className="font-black">“Yes”</span> preferences for this property type
+  <br />
+  <span className="font-black">2)</span> Temporarily lock <span className="font-black">“Yes”</span> until all “Only” selections are turned off
+  <br />
+  <br />
+  <span className="font-black">Tip:</span> You can uncheck any selected option by clicking it again.
+</p>
+
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {config.prefs.map(pref => (
+          <div
+            key={pref}
+            className={`group p-6 md:p-8 rounded-[2.5rem] flex flex-col xl:flex-row xl:items-center justify-between gap-6 transition-all border-2 ${
+              isDarkMode
+                ? 'bg-slate-900/40 border-slate-700'
+                : 'bg-[#FAFBFF] border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-2xl'
+            }`}
+          >
+            <span
+              className={`text-sm font-bold leading-relaxed max-w-xl ${
+                isDarkMode ? 'text-slate-200' : 'text-slate-900'
+              }`}
+            >
+              {pref}
+            </span>
+
+            <div
+              className={`grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 md:p-2 rounded-2xl border transition-all ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 shadow-inner'
+                  : 'bg-white border-slate-200 shadow-sm'
+              }`}
+            >
+              {(['No', 'Yes', 'Maybe', 'Only'] as PreferenceValue[]).map(val => {
+                const isChecked = state.preferences[pref] === val;
+                const isYesLocked = val === 'Yes' && isOnlyActive; // ✅ disable YES when ANY Only is active
+
+                return (
+                  <label key={val} className="relative w-full">
+                    <input
+                      type="radio"
+                      name={`${key}-${pref}`}
+                      value={val}
+                      checked={isChecked}
+                      disabled={isYesLocked}
+                      onChange={() => updatePreference(key, pref, val)}
+                      // ✅ enable "uncheck" by clicking same selected option again
+                      onClick={() => {
+                        if (isChecked) updatePreference(key, pref, val);
+                      }}
+                      className="sr-only peer"
+                    />
+
+                    <div
+                      className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all text-center
+                      peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-2xl
+                      ${
+                        isYesLocked
+                          ? 'opacity-40 cursor-not-allowed'
+                          : 'cursor-pointer'
+                      }
+                      ${
+                        isDarkMode
+                          ? 'text-slate-500 hover:text-slate-200'
+                          : 'text-slate-400 hover:text-slate-900'
+                      }`}
+                    >
+                      {val}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+})()}
+
 
                             {/* Visual warnings */}
                             {(locationScopeMissing ||
