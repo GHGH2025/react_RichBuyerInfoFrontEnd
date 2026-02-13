@@ -772,13 +772,31 @@ const updatePreference = (
         </div> */}
 
         {/* Headline */}
-        <div className="mb-10 space-y-2">
+        {/* <div className="mb-10 space-y-2">
           <p className="text-sm md:text-base font-extrabold tracking-widest uppercase text-slate-600 dark:text-slate-200">
             Welcome to
           </p>
 
           <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase text-slate-900 dark:text-white drop-shadow-sm">
             WholesaleDealFinder.Ai
+          </h2>
+        </div> */}
+
+        <div className="mb-10 space-y-2 text-center">
+          <p
+            className={`text-sm md:text-base font-extrabold tracking-widest uppercase ${
+              isDarkMode ? 'text-slate-400' : 'text-slate-600'
+            }`}
+          >
+            Welcome to
+          </p>
+
+          <h2
+            className={`text-4xl sm:text-5xl font-black tracking-tight uppercase leading-tight break-words drop-shadow-sm ${
+              isDarkMode ? 'text-slate-700' : 'text-slate-900'
+            }`}
+          >
+            WholesaleDealFinder.ai
           </h2>
         </div>
 
