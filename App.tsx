@@ -43,6 +43,35 @@ import {
   CITIES_BY_COUNTY,
 } from './constants';
 
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeUsPhone = (digitsOnly: string) => {
+  const d = (digitsOnly || '').replace(/\D/g, '');
+  if (d.length === 11 && d.startsWith('1')) return d.slice(1);
+  return d;
+};
+
+const isValidUsPhone = (digitsOnly: string) => normalizeUsPhone(digitsOnly).length === 10;
+
+// Add near the top (outside component)
+const stableStringify = (val: any) => {
+  const sortObj = (x: any): any => {
+    if (Array.isArray(x)) return x.map(sortObj);
+    if (x && typeof x === 'object') {
+      const out: any = {};
+      Object.keys(x)
+        .sort()
+        .forEach(k => (out[k] = sortObj(x[k])));
+      return out;
+    }
+    return x;
+  };
+  return JSON.stringify(sortObj(val));
+};
+
+const normalizeEmail = (v: string) => (v || '').trim().toLowerCase();
+
 const ALL_CITIES_OPTION = 'All Cities';
 
 const INITIAL_PROPERTY_STATE: PropertyTypeState = {
@@ -86,6 +115,42 @@ const App: React.FC = () => {
     //   cities: [],
     // },
   });
+
+
+  // ✅ Duplicate checks (email/phone)
+  const [emailExists, setEmailExists] = useState(false);
+  const [phoneExists, setPhoneExists] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
+  const [emailCheckError, setEmailCheckError] = useState('');
+  const [phoneCheckError, setPhoneCheckError] = useState('');
+
+  const emailCheckSeq = React.useRef(0);
+  const phoneCheckSeq = React.useRef(0);
+
+const isDuplicateBlocked = emailExists || phoneExists;
+const isUniquenessPending = isCheckingEmail || isCheckingPhone;
+
+
+// update mode states:
+
+// ✅ UPDATE MODE
+const [isUpdateMode, setIsUpdateMode] = useState(false);
+const [updateToken, setUpdateToken] = useState('');
+const [updateMongoId, setUpdateMongoId] = useState('');
+const [updatePodioItemId, setUpdatePodioItemId] = useState<number | null>(null);
+
+const [isHydrating, setIsHydrating] = useState(false);
+const [updateLoadError, setUpdateLoadError] = useState('');
+
+const [originalSnapshot, setOriginalSnapshot] = useState('');
+const [saveSuccess, setSaveSuccess] = useState(false);
+const [saveError, setSaveError] = useState('');
+
+
+const [originalEmail, setOriginalEmail] = useState('');
+const [originalPhone10, setOriginalPhone10] = useState('');
+
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
@@ -180,25 +245,6 @@ const App: React.FC = () => {
     }));
   };
 
-  // const updatePreference = (
-  //   key: keyof AppState['properties'],
-  //   prefKey: string,
-  //   value: PreferenceValue
-  // ) => {
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     properties: {
-  //       ...prev.properties,
-  //       [key]: {
-  //         ...prev.properties[key],
-  //         preferences: {
-  //           ...prev.properties[key].preferences,
-  //           [prefKey]: value,
-  //         },
-  //       },
-  //     },
-  //   }));
-  // };
 
 
 // for only and yes logic
@@ -265,18 +311,6 @@ const updatePreference = (
 };
 
 
-  // const updatePropertyLocationScope = (key: keyof AppState['properties'], scope: '' | LocationScope) => {
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     properties: {
-  //       ...prev.properties,
-  //       [key]: {
-  //         ...prev.properties[key],
-  //         location: { scope },
-  //       },
-  //     },
-  //   }));
-  // };
 
   const updatePropertyLocationScope = (key: keyof AppState['properties'], scope: '' | LocationScope) => {
     setFormData(prev => ({
@@ -408,139 +442,7 @@ const updatePreference = (
     return (Object.keys(props) as Array<keyof typeof props>).filter(k => props[k].enabled);
   }, [formData.properties]);
 
-  // const allPropertyLocationScopesChosen = useMemo(() => {
-  //   if (enabledKeys.length === 0) return false;
-  //   return enabledKeys.every(k => !!formData.properties[k].location?.scope);
-  // }, [enabledKeys, formData.properties]);
-
-  // // ---------- ✅ Derived final location scope (global) ----------
-  // const derivedLocationScope = useMemo<'' | LocationScope>(() => {
-  //   if (enabledKeys.length === 0) return '';
-  //   if (!allPropertyLocationScopesChosen) return '';
-
-  //   const anyAllFlorida = enabledKeys.some(
-  //     k => formData.properties[k].location.scope === 'all_florida'
-  //   );
-  //   return anyAllFlorida ? 'all_florida' : 'south_florida';
-  // }, [enabledKeys, allPropertyLocationScopesChosen, formData.properties]);
-
-  // const allowedCounties = useMemo<string[]>(() => {
-  //   if (!derivedLocationScope) return [];
-  //   return derivedLocationScope === 'all_florida' ? COUNTIES : SOUTH_FLORIDA_COUNTIES;
-  // }, [derivedLocationScope]);
-
-  // const availableCities = useMemo<string[]>(() => {
-  //   const selectedCounties = formData.location.counties || [];
-  //   if (selectedCounties.length === 0) return [];
-
-  //   const set = new Set<string>();
-  //   for (const county of selectedCounties) {
-  //     const list = CITIES_BY_COUNTY[county] || CITIES_BY_COUNTY['default'] || [];
-  //     for (const city of list) set.add(city);
-  //   }
-
-  //   const cities = Array.from(set);
-  //   // ensure All Cities is available
-  //   if (!cities.includes(ALL_CITIES_OPTION)) cities.unshift(ALL_CITIES_OPTION);
-  //   return cities;
-  // }, [formData.location.counties]);
-
-  // ---------- ✅ Global county/city selection handlers ----------
-  // const toggleGlobalCounty = (county: string) => {
-  //   setFormData(prev => {
-  //     const curr = prev.location.counties || [];
-  //     const nextCounties = curr.includes(county) ? curr.filter(c => c !== county) : [...curr, county];
-
-  //     // sanitize cities based on nextCounties
-  //     if (nextCounties.length === 0) {
-  //       return { ...prev, location: { counties: [], cities: [] } };
-  //     }
-
-  //     const citySet = new Set<string>();
-  //     for (const c of nextCounties) {
-  //       const list = CITIES_BY_COUNTY[c] || CITIES_BY_COUNTY['default'] || [];
-  //       for (const city of list) citySet.add(city);
-  //     }
-
-  //     const currCities = prev.location.cities || [];
-  //     const keepAllCities = currCities.includes(ALL_CITIES_OPTION);
-
-  //     const nextCities = keepAllCities
-  //       ? [ALL_CITIES_OPTION]
-  //       : currCities.filter(city => citySet.has(city));
-
-  //     return {
-  //       ...prev,
-  //       location: {
-  //         counties: nextCounties,
-  //         cities: nextCities,
-  //       },
-  //     };
-  //   });
-  // };
-
-  // const toggleGlobalCity = (city: string) => {
-  //   setFormData(prev => {
-  //     const curr = prev.location.cities || [];
-  //     const next = toggleExclusiveMultiSelect(curr, city, ALL_CITIES_OPTION);
-
-  //     return {
-  //       ...prev,
-  //       location: {
-  //         ...prev.location,
-  //         cities: next,
-  //       },
-  //     };
-  //   });
-  // };
-
-  // // ✅ When derived scope changes, drop invalid counties/cities automatically
-  // useEffect(() => {
-  //   if (!derivedLocationScope) return;
-
-  //   setFormData(prev => {
-  //     const nextCounties = (prev.location.counties || []).filter(c => allowedCounties.includes(c));
-
-  //     // rebuild allowed city set from nextCounties
-  //     const citySet = new Set<string>();
-  //     for (const c of nextCounties) {
-  //       const list = CITIES_BY_COUNTY[c] || CITIES_BY_COUNTY['default'] || [];
-  //       for (const city of list) citySet.add(city);
-  //     }
-
-  //     let nextCities = prev.location.cities || [];
-
-  //     // if no counties, must clear cities
-  //     if (nextCounties.length === 0) nextCities = [];
-
-  //     // keep All Cities if selected + counties exist
-  //     if (nextCities.includes(ALL_CITIES_OPTION)) {
-  //       nextCities = nextCounties.length > 0 ? [ALL_CITIES_OPTION] : [];
-  //     } else {
-  //       nextCities = nextCities.filter(city => citySet.has(city));
-  //     }
-
-  //     // no changes
-  //     const sameCounties =
-  //       nextCounties.length === (prev.location.counties || []).length &&
-  //       nextCounties.every((c, i) => c === (prev.location.counties || [])[i]);
-
-  //     const sameCities =
-  //       nextCities.length === (prev.location.cities || []).length &&
-  //       nextCities.every((c, i) => c === (prev.location.cities || [])[i]);
-
-  //     if (sameCounties && sameCities) return prev;
-
-  //     return {
-  //       ...prev,
-  //       location: {
-  //         counties: nextCounties,
-  //         cities: nextCities,
-  //       },
-  //     };
-  //   });
-  // }, [derivedLocationScope, allowedCounties]);
-
+ 
   // ---------- ✅ Validation ----------
   const isFormValid = useMemo(() => {
     const { contact, properties, location } = formData;
@@ -595,17 +497,7 @@ const updatePreference = (
       return true;
     });
 
-    // // global derived scope must exist (only when all property scopes picked)
-    // if (!derivedLocationScope) return false;
 
-    // // global counties + cities required
-    // const isGlobalLocationValid =
-    //   Array.isArray(location.counties) &&
-    //   location.counties.length > 0 &&
-    //   Array.isArray(location.cities) &&
-    //   location.cities.length > 0;
-
-    // return isContactValid && areEnabledPropertiesValid && isGlobalLocationValid;
 
     return isContactValid && areEnabledPropertiesValid;
 
@@ -661,13 +553,6 @@ const updatePreference = (
       });
     }
 
-    // if (!derivedLocationScope) {
-    //   steps.push('Select All Florida/South Florida in each selected Property Type');
-    // } else {
-    //   if (!location.counties || location.counties.length === 0) steps.push('Select at least 1 County');
-    //   if (!location.cities || location.cities.length === 0) steps.push('Select at least 1 City');
-    // }
-    
 
     return steps;
   }, [formData, enabledKeys]);
@@ -677,7 +562,312 @@ const updatePreference = (
     (process as any).env?.REACT_APP_API_BASE_URL ||
     '';
 
+
+
+
+
+    
+const canSubmitNow = isFormValid && !isSubmitting && !isDuplicateBlocked && !isUniquenessPending;
+
+
+const duplicateLabel =
+  emailExists && phoneExists
+    ? 'email and phone number'
+    : emailExists
+    ? 'email'
+    : phoneExists
+    ? 'phone number'
+    : '';
+
+
+
+const isDirty = useMemo(() => {
+  if (!isUpdateMode) return false;
+  if (!originalSnapshot) return false;
+  return stableStringify(formData) !== originalSnapshot;
+}, [isUpdateMode, originalSnapshot, formData]);
+
+const canSaveNow =
+  isUpdateMode &&
+  isFormValid &&
+  !isSubmitting &&
+  isDirty &&
+  !isDuplicateBlocked &&
+  !isUniquenessPending;
+
+  const emailValue = (formData.contact.email || '').trim();
+  const phoneDigitsRaw = (formData.contact.callWhatsapp || '').trim();
+  const phone10 = normalizeUsPhone(phoneDigitsRaw);
+
+  const isEmailValidNow = EMAIL_REGEX.test(emailValue);
+  const isPhoneValidNow = isValidUsPhone(phoneDigitsRaw);
+
+  // ✅ Email duplicate check (debounced)
+ const emailNorm = normalizeEmail(emailValue);
+
+useEffect(() => {
+  setEmailCheckError('');
+
+  const sameAsOriginal =
+    isUpdateMode && originalEmail && emailNorm === originalEmail;
+
+  // ✅ Hold checks during hydration / before we know which record to exclude / or if unchanged
+  const shouldHold =
+    isUpdateMode &&
+    (isHydrating || !updateMongoId || !originalSnapshot || sameAsOriginal);
+
+  if (!emailNorm || !EMAIL_REGEX.test(emailNorm) || shouldHold) {
+    emailCheckSeq.current += 1;
+    setEmailExists(false);
+    setIsCheckingEmail(false);
+    return;
+  }
+
+  const seq = ++emailCheckSeq.current;
+
+  const t = window.setTimeout(async () => {
+    setIsCheckingEmail(true);
+    try {
+      const base = API_BASE_URL.replace(/\/$/, '');
+      const exclude =
+        isUpdateMode && updateMongoId
+          ? `&exclude_id=${encodeURIComponent(updateMongoId)}`
+          : '';
+
+      const url = `${base}/api/buyer-submissions/exists?type=email&value=${encodeURIComponent(
+        emailNorm
+      )}${exclude}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Email check failed (${res.status})`);
+      const data = await res.json();
+
+      if (seq !== emailCheckSeq.current) return;
+      setEmailExists(Boolean(data?.exists));
+    } catch (e: any) {
+      if (seq !== emailCheckSeq.current) return;
+      setEmailExists(false);
+      setEmailCheckError("We couldn’t verify this email right now. Please try again.");
+    } finally {
+      if (seq === emailCheckSeq.current) setIsCheckingEmail(false);
+    }
+  }, 500);
+
+  return () => window.clearTimeout(t);
+}, [
+  emailNorm,
+  API_BASE_URL,
+  isUpdateMode,
+  updateMongoId,
+  isHydrating,
+  originalEmail,
+  originalSnapshot,
+]);
+
+  // ✅ Phone duplicate check (debounced)
+  useEffect(() => {
+  setPhoneCheckError('');
+
+  const sameAsOriginal =
+    isUpdateMode && originalPhone10 && phone10 === originalPhone10;
+
+  const shouldHold =
+    isUpdateMode &&
+    (isHydrating || !updateMongoId || !originalSnapshot || sameAsOriginal);
+
+  if (!phoneDigitsRaw || !isValidUsPhone(phoneDigitsRaw) || shouldHold) {
+    phoneCheckSeq.current += 1;
+    setPhoneExists(false);
+    setIsCheckingPhone(false);
+    return;
+  }
+
+  const seq = ++phoneCheckSeq.current;
+
+  const t = window.setTimeout(async () => {
+    setIsCheckingPhone(true);
+    try {
+      const base = API_BASE_URL.replace(/\/$/, '');
+      const exclude =
+        isUpdateMode && updateMongoId
+          ? `&exclude_id=${encodeURIComponent(updateMongoId)}`
+          : '';
+
+      const url = `${base}/api/buyer-submissions/exists?type=phone&value=${encodeURIComponent(
+        phone10
+      )}${exclude}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Phone check failed (${res.status})`);
+      const data = await res.json();
+
+      if (seq !== phoneCheckSeq.current) return;
+      setPhoneExists(Boolean(data?.exists));
+    } catch (e: any) {
+      if (seq !== phoneCheckSeq.current) return;
+      setPhoneExists(false);
+      setPhoneCheckError("We couldn’t verify this phone number right now. Please try again.");
+    } finally {
+      if (seq === phoneCheckSeq.current) setIsCheckingPhone(false);
+    }
+  }, 500);
+
+  return () => window.clearTimeout(t);
+}, [
+  phoneDigitsRaw,
+  phone10,
+  API_BASE_URL,
+  isUpdateMode,
+  updateMongoId,
+  isHydrating,
+  originalPhone10,
+  originalSnapshot,
+]);
+
+  // update mode logic:
+
+  // ✅ Detect update token in URL and hydrate form
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = (params.get('id') || '').trim();
+  if (!token) return;
+
+  setIsUpdateMode(true);
+  setUpdateToken(token);
+}, []);
+
+useEffect(() => {
+  const run = async () => {
+    if (!updateToken) return;
+
+    setIsHydrating(true);
+    setUpdateLoadError('');
+    setSaveSuccess(false);
+    setSaveError('');
+
+    try {
+      const url = `${API_BASE_URL.replace(/\/$/, '')}/api/buyer-submissions/update/resolve`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: updateToken }),
+      });
+
+      if (!res.ok) {
+        let msg = `Update link failed (${res.status})`;
+        try {
+          const j = await res.json();
+          msg = j?.detail || j?.error || msg;
+        } catch {}
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      const submission = data?.submission;
+
+      if (!submission || typeof submission !== 'object') {
+        throw new Error('No saved profile data found for this link.');
+      }
+
+      setUpdateMongoId(String(data?.mongo_id || ''));
+      setUpdatePodioItemId(
+        data?.podio_item_id !== undefined && data?.podio_item_id !== null
+          ? Number(data.podio_item_id)
+          : null
+      );
+
+      setFormData(submission); // ✅ fills entire form exactly as stored
+      setOriginalSnapshot(stableStringify(submission)); // ✅ baseline for "has changes"
+
+      const hydratedEmail = normalizeEmail(submission?.contact?.email || '');
+      const hydratedPhone10 = normalizeUsPhone(
+        String(
+          submission?.contact?.callWhatsapp ||
+            submission?.contact?.textNumber ||
+            submission?.contact?.phoneCall ||
+            ''
+        )
+      );
+
+      setOriginalEmail(hydratedEmail);
+      setOriginalPhone10(hydratedPhone10);
+
+      // ensure no stale warnings from any earlier checks
+      setEmailExists(false);
+      setPhoneExists(false);
+      setIsCheckingEmail(false);
+      setIsCheckingPhone(false);
+    } catch (e: any) {
+      console.error(e);
+      setUpdateLoadError(e?.message || 'Invalid or expired update link. Please request a new one.');
+      // Requirement: if invalid -> render blank form as normal
+      setIsUpdateMode(false);
+      setUpdateToken('');
+      setUpdateMongoId('');
+      setUpdatePodioItemId(null);
+      setOriginalSnapshot('');
+      setOriginalEmail('');
+      setOriginalPhone10('');
+      setEmailExists(false);
+      setPhoneExists(false);
+      setIsCheckingEmail(false);
+      setIsCheckingPhone(false);
+    } finally {
+      setIsHydrating(false);
+    }
+  };
+
+  run();
+}, [updateToken, API_BASE_URL]);
+
+
+const handleSave = async () => {
+  if (!canSaveNow) return;
+
+  setSaveError('');
+  setSaveSuccess(false);
+  setIsSubmitting(true);
+
+  try {
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/api/buyer-submissions/update/save`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: updateToken,
+        payload: formData,
+      }),
+    });
+
+    if (!res.ok) {
+      let errText = `Request failed (${res.status})`;
+      try {
+        const errJson = await res.json();
+        errText = errJson?.detail || errJson?.error || JSON.stringify(errJson);
+      } catch {
+        errText = await res.text();
+      }
+      throw new Error(errText);
+    }
+
+    await res.json();
+
+    // ✅ reset baseline so Save disables until another change is made
+    setOriginalSnapshot(stableStringify(formData));
+
+    setSaveSuccess(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e: any) {
+    console.error(e);
+    setSaveError(e?.message || 'Failed to save changes. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
   const handleSubmit = async (e: React.FormEvent) => {
+    if (isUpdateMode) return;
     e.preventDefault();
     if (!isFormValid) return;
     if (isSubmitting) return;
@@ -691,11 +881,6 @@ const updatePreference = (
       // ✅ Final payload includes derived global location scope
       const payload = {
         ...formData,
-        // location: {
-        //   scope: derivedLocationScope,
-        //   counties: formData.location.counties,
-        //   cities: formData.location.cities,
-        // },
       };
 
       console.log('Submitting API Payload:', JSON.stringify(payload, null, 2));
@@ -731,32 +916,6 @@ const updatePreference = (
     setIsSubmitting(true);
   };
 
-  // if (isSubmitted) {
-  //   return (
-  //     <div
-  //       className={`min-h-screen ${
-  //         isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'
-  //       } flex items-center justify-center p-6`}
-  //     >
-  //       <div className="max-w-lg w-full bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl p-12 text-center border-2 border-slate-100 dark:border-slate-700">
-  //         <div className="w-24 h-24 bg-blue-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
-  //           <ShieldCheck className="text-white w-12 h-12" />
-  //         </div>
-  //         <h2 className="text-4xl font-black mb-4 tracking-tight uppercase">Confirmed</h2>
-  //         <p className="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed font-bold">
-  //           Your investment preferences have been synced with our system. A representative from So.
-  //           Florida Home Buyers LLC will contact you soon.
-  //         </p>
-  //         <button
-  //           onClick={() => window.location.reload()}
-  //           className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95"
-  //         >
-  //           Send new preferences
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   if (isSubmitted) {
   return (
@@ -766,21 +925,7 @@ const updatePreference = (
       } flex items-center justify-center p-6`}
     >
       <div className="max-w-3xl w-full bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl p-10 md:p-14 text-center border-2 border-slate-100 dark:border-slate-700">
-        {/* Icon */}
-        {/* <div className="w-24 h-24 bg-blue-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
-          <ShieldCheck className="text-white w-12 h-12" />
-        </div> */}
-
-        {/* Headline */}
-        {/* <div className="mb-10 space-y-2">
-          <p className="text-sm md:text-base font-extrabold tracking-widest uppercase text-slate-600 dark:text-slate-200">
-            Welcome to
-          </p>
-
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase text-slate-900 dark:text-white drop-shadow-sm">
-            WholesaleDealFinder.Ai
-          </h2>
-        </div> */}
+       
 
         <div className="mb-10 space-y-2 text-center">
           <p
@@ -888,6 +1033,21 @@ const updatePreference = (
           isDarkMode ? 'bg-slate-900' : 'bg-[#FBFBFF]'
         } transition-colors duration-500 pb-20`}
       >
+        {isHydrating && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className={`rounded-[2rem] px-10 py-8 shadow-2xl border-2 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-100 text-slate-900'}`}>
+      <p className="text-[11px] font-black uppercase tracking-[0.25em] opacity-80 text-center">
+        Loading your saved profile...
+      </p>
+      <div className="mt-6 flex justify-center">
+        <div className="w-10 h-10 rounded-full border-4 border-blue-600/30 border-t-blue-600 animate-spin" />
+      </div>
+      <p className={`mt-5 text-[10px] font-bold italic text-center ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+        Please wait — we’re fetching your previous submission.
+      </p>
+    </div>
+  </div>
+)}
         {/* High-End Navigation */}
         <nav
           className={`sticky top-0 z-50 w-full px-8 py-6 border-b ${
@@ -1070,29 +1230,7 @@ const updatePreference = (
                     )}
                   </div>
 
-                  {/* <div
-                    className={`p-6 rounded-3xl border-2 flex gap-5 items-start ${
-                      isDarkMode
-                        ? 'bg-amber-900/10 border-amber-800/30'
-                        : 'bg-amber-50/50 border-amber-100'
-                    }`}
-                  >
-                    <AlertCircle className="text-amber-500 w-6 h-6 shrink-0 mt-0.5" />
-                    <p
-                      className={`text-sm leading-relaxed ${
-                        isDarkMode ? 'text-amber-200' : 'text-amber-900/80'
-                      }`}
-                    >
-                      <span className="font-black uppercase tracking-wider mr-2 underline">
-                        Important Note:
-                      </span>{' '}
-                      If you select{' '}
-                      <span className="font-black text-blue-600 dark:text-blue-400">"ONLY"</span>{' '}
-                      under Special Preference, the AI will <span className="italic underline">ONLY</span>{' '}
-                      send you properties that match that specific preference. The AI will NOT stack{' '}
-                      <span className="italic underline">ONLY</span> requests.
-                    </p>
-                  </div> */}
+            
                 </div>
               </div>
             </section>
@@ -1161,6 +1299,33 @@ const updatePreference = (
                         : 'bg-slate-50 border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200 focus:bg-white'
                     }`}
                   />
+                                    {/* ✅ Email duplicate warning */}
+                  {isEmailValidNow && isCheckingEmail && (
+                    <p className={`text-[11px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Checking email…
+                    </p>
+                  )}
+
+                  {emailExists && isEmailValidNow && (!isUpdateMode || emailNorm !== originalEmail) && (
+  <p className={`text-[11px] font-bold ${isDarkMode ? 'text-rose-300' : 'text-rose-600'}`}>
+                      This email has already been used to submit the form. To update your Buy Box, visit{' '}
+                      <a
+                        href="https://wholesaledealfinder.ai/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`underline font-black ${isDarkMode ? 'text-rose-200' : 'text-rose-700'}`}
+                      >
+                        wholesaledealfinder.ai
+                      </a>
+                      .
+                    </p>
+                  )}
+
+                  {emailCheckError && isEmailValidNow && (
+                    <p className={`text-[11px] font-bold ${isDarkMode ? 'text-amber-300' : 'text-amber-600'}`}>
+                      {emailCheckError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Call/WhatsApp */}
@@ -1184,6 +1349,34 @@ const updatePreference = (
                         : 'bg-slate-50 border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200 focus:bg-white'
                     }`}
                   />
+
+                                    {/* ✅ Phone duplicate warning */}
+                  {isPhoneValidNow && isCheckingPhone && (
+                    <p className={`text-[11px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Checking phone number…
+                    </p>
+                  )}
+
+                  {phoneExists && isPhoneValidNow && (!isUpdateMode || phone10 !== originalPhone10) && (
+  <p className={`text-[11px] font-bold ${isDarkMode ? 'text-rose-300' : 'text-rose-600'}`}>
+                      This phone number has already been used to submit the form. To update your Buy Box, visit{' '}
+                      <a
+                        href="https://wholesaledealfinder.ai/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`underline font-black ${isDarkMode ? 'text-rose-200' : 'text-rose-700'}`}
+                      >
+                        wholesaledealfinder.ai
+                      </a>
+                      .
+                    </p>
+                  )}
+
+                  {phoneCheckError && isPhoneValidNow && (
+                    <p className={`text-[11px] font-bold ${isDarkMode ? 'text-amber-300' : 'text-amber-600'}`}>
+                      {phoneCheckError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Communication Preference (MULTI-SELECT) */}
@@ -1737,9 +1930,7 @@ const commercialOtherMissing =
                                     </div>
                                   )}
 
-                                  {/* <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-blue-600">
-                                    <ArrowRight size={20} />
-                                  </div> */}
+                                  
                                 </div>
                               </div>
                             </div>
@@ -1930,22 +2121,34 @@ const commercialOtherMissing =
                 }`}
               >
                 <div className="max-w-2xl mx-auto space-y-10">
-                  <button
-                    disabled={!isFormValid || isSubmitting}
-                    type="submit"
-                    className={`group w-full py-8 px-12 rounded-[2rem] text-2xl font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-6 active:scale-95 ${
-                      isFormValid && !isSubmitting
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/40'
-                        : 'bg-white dark:bg-slate-900 text-blue-600/30 dark:text-slate-700 border-2 border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-80'
-                    }`}
-                  >
-                    <span>{isSubmitting ? 'Submitting...' : 'Submit'}</span>
-                    <ArrowRight
-                      className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${
-                        !isFormValid || isSubmitting ? 'opacity-10' : ''
-                      }`}
-                    />
-                  </button>
+                 {isUpdateMode ? (
+  <button
+    disabled={!canSaveNow}
+    type="button"
+    onClick={handleSave}
+    className={`group w-full py-8 px-12 rounded-[2rem] text-2xl font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-6 active:scale-95 ${
+      canSaveNow
+        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/40'
+        : 'bg-white dark:bg-slate-900 text-emerald-600/30 dark:text-slate-700 border-2 border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-80'
+    }`}
+  >
+    <span>{isSubmitting ? 'Saving...' : 'Save'}</span>
+    <ArrowRight className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${!canSaveNow ? 'opacity-10' : ''}`} />
+  </button>
+) : (
+  <button
+    disabled={!isFormValid || isSubmitting || isDuplicateBlocked || isUniquenessPending}
+    type="submit"
+    className={`group w-full py-8 px-12 rounded-[2rem] text-2xl font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-6 active:scale-95 ${
+      isFormValid && !isSubmitting && !isDuplicateBlocked && !isUniquenessPending
+        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/40'
+        : 'bg-white dark:bg-slate-900 text-blue-600/30 dark:text-slate-700 border-2 border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-80'
+    }`}
+  >
+    <span>{isSubmitting ? 'Submitting...' : 'Submit'}</span>
+    <ArrowRight className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${(!isFormValid || isSubmitting) ? 'opacity-10' : ''}`} />
+  </button>
+)}
 
                   {submitError && (
                     <div className="px-8 py-5 rounded-[2rem] bg-rose-600/10 border border-rose-600/20">
@@ -1966,42 +2169,166 @@ const commercialOtherMissing =
                     </div>
                   )}
 
+
+{updateLoadError && (
+  <div className="px-8 py-5 rounded-[2rem] bg-amber-600/10 border border-amber-600/20">
+    <p className={`text-[11px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+      Update link issue
+    </p>
+    <p className={`text-[11px] font-bold mt-2 ${isDarkMode ? 'text-amber-200/80' : 'text-amber-700/80'}`}>
+      {updateLoadError}
+    </p>
+  </div>
+)}
+
+{saveError && (
+  <div className="px-8 py-5 rounded-[2rem] bg-rose-600/10 border border-rose-600/20">
+    <p className={`text-[11px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-rose-300' : 'text-rose-700'}`}>
+      Save failed
+    </p>
+    <p className={`text-[11px] font-bold mt-2 ${isDarkMode ? 'text-rose-200/80' : 'text-rose-700/80'}`}>
+      {saveError}
+    </p>
+  </div>
+)}
+
+{saveSuccess && (
+  <div className="px-8 py-5 rounded-[2rem] bg-emerald-600/10 border border-emerald-600/20">
+    <p className={`text-[11px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
+      Saved successfully
+    </p>
+    <p className={`text-[11px] font-bold mt-2 ${isDarkMode ? 'text-emerald-200/80' : 'text-emerald-700/80'}`}>
+      Your Buy Box has been updated successfully.
+    </p>
+  </div>
+)}
+
+
                   <div className="flex flex-col items-center gap-5">
-                    {!isFormValid ? (
-                      <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 transition-all">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                          <p
-                            className={`text-[11px] font-black uppercase tracking-[0.2em] ${
-                              isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                            }`}
-                          >
-                            Form status: INCOMPLETE
-                          </p>
-                        </div>
-                        <p
-                          className={`text-[10px] font-bold ${
-                            isDarkMode ? 'text-slate-500' : 'text-slate-400'
-                          } italic max-w-sm leading-relaxed`}
-                        >
-                          {formStatusSummary.length > 0
-                            ? `To finish, please: ${formStatusSummary.join(' • ')}`
-                            : 'Almost there! Checking details...'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-emerald-600 text-white shadow-2xl shadow-emerald-500/40">
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 size={16} />
-                          <p className="text-[11px] font-black uppercase tracking-[0.2em]">
-                            Status: READY TO SYNC
-                          </p>
-                        </div>
-                        <p className="text-[10px] font-bold opacity-80 italic">
-                          Everything looks perfect! You are now ready to submit your profile.
-                        </p>
-                      </div>
-                    )}
+       
+{!isFormValid ? (
+  <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 transition-all">
+    <div className="flex items-center gap-3">
+      <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+      <p
+        className={`text-[11px] font-black uppercase tracking-[0.2em] ${
+          isDarkMode ? 'text-slate-400' : 'text-slate-500'
+        }`}
+      >
+        Form status: INCOMPLETE
+      </p>
+    </div>
+    <p
+      className={`text-[10px] font-bold ${
+        isDarkMode ? 'text-slate-500' : 'text-slate-400'
+      } italic max-w-sm leading-relaxed`}
+    >
+      {formStatusSummary.length > 0
+        ? `To finish, please: ${formStatusSummary.join(' • ')}`
+        : 'Almost there! Checking details...'}
+    </p>
+  </div>
+) : isUniquenessPending ? (
+  // ✅ Form valid, but we are still checking duplicates
+  <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-amber-600 text-white shadow-2xl shadow-amber-500/40">
+    <div className="flex items-center gap-3">
+      <AlertCircle size={16} />
+      <p className="text-[11px] font-black uppercase tracking-[0.2em]">
+        Status: VALIDATING
+      </p>
+    </div>
+    <p className="text-[10px] font-bold opacity-90 italic">
+      Please wait - we’re verifying that your email and phone number haven’t been used before.
+    </p>
+  </div>
+) : isDuplicateBlocked ? (
+  // ✅ Form valid, but blocked due to duplicate email/phone
+  <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-rose-600 text-white shadow-2xl shadow-rose-500/40">
+    <div className="flex items-center gap-3">
+      <AlertCircle size={16} />
+      <p className="text-[11px] font-black uppercase tracking-[0.2em]">
+        Status: ALREADY SUBMITTED
+      </p>
+    </div>
+
+    <p className="text-[10px] font-bold opacity-95 italic text-center max-w-md leading-relaxed">
+      {isUpdateMode ? (
+        <>
+          This {duplicateLabel || 'contact information'} is already used by another profile.
+          Please enter a different {duplicateLabel || 'value'} to save your changes.
+        </>
+      ) : (
+        <>
+          This {duplicateLabel || 'contact information'} was already used to submit the form.
+          To update your Buy Box, visit{' '}
+          <a
+            href="https://wholesaledealfinder.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline font-black text-white"
+          >
+            wholesaledealfinder.ai
+          </a>
+          .
+        </>
+      )}
+    </p>
+  </div>
+) : isUpdateMode ? (
+  // ✅ UPDATE MODE statuses (no “ready to submit” language)
+  isSubmitting ? (
+    <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-emerald-700 text-white shadow-2xl shadow-emerald-500/40">
+      <div className="flex items-center gap-3">
+        <ShieldCheck size={16} />
+        <p className="text-[11px] font-black uppercase tracking-[0.2em]">
+          Status: SAVING
+        </p>
+      </div>
+      <p className="text-[10px] font-bold opacity-85 italic text-center">
+        Please wait - we’re updating your Buy Box.
+      </p>
+    </div>
+  ) : !isDirty ? (
+    <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-slate-700 text-white shadow-2xl shadow-slate-500/30">
+      <div className="flex items-center gap-3">
+        <Info size={16} />
+        <p className="text-[11px] font-black uppercase tracking-[0.2em]">
+          Status: NO CHANGES
+        </p>
+      </div>
+      <p className="text-[10px] font-bold opacity-85 italic text-center max-w-md leading-relaxed">
+        Your saved Buy Box is loaded. Make a change anywhere above to enable the <span className="font-black">Save</span> button.
+      </p>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-emerald-600 text-white shadow-2xl shadow-emerald-500/40">
+      <div className="flex items-center gap-3">
+        <CheckCircle2 size={16} />
+        <p className="text-[11px] font-black uppercase tracking-[0.2em]">
+          Status: READY TO SAVE
+        </p>
+      </div>
+      <p className="text-[10px] font-bold opacity-85 italic text-center">
+        Changes detected. Click <span className="font-black">Save</span> to update your Buy Box.
+      </p>
+    </div>
+  )
+) : (
+  // ✅ NON-UPDATE MODE (original behavior)
+  <div className="flex flex-col items-center gap-3 px-8 py-5 rounded-[2rem] bg-emerald-600 text-white shadow-2xl shadow-emerald-500/40">
+    <div className="flex items-center gap-3">
+      <CheckCircle2 size={16} />
+      <p className="text-[11px] font-black uppercase tracking-[0.2em]">
+        Status: READY TO SYNC
+      </p>
+    </div>
+    <p className="text-[10px] font-bold opacity-80 italic">
+      Everything looks perfect! You are now ready to submit your profile.
+    </p>
+  </div>
+)}
+
+
                   </div>
                 </div>
               </div>
