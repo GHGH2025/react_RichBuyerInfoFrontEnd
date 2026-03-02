@@ -159,10 +159,10 @@ const UpdateBuyBox: React.FC = () => {
             }`}
           >
             <h2 className={`text-3xl md:text-4xl font-black tracking-tight uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-              Get Your Update Link
+              Update Your Buy Box
             </h2>
             <p className={`mt-4 text-sm font-bold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-              Enter the same email and phone number you used when submitting your profile.
+              Enter the same email and phone number you used when creating your account.
               We’ll email you a secure link to open your saved Buy Box and edit it.
             </p>
 
