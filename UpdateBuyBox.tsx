@@ -5,13 +5,13 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const normalizeEmail = (v: string) => (v || '').trim().toLowerCase();
 
-const normalizeUsPhone = (digitsOnly: string) => {
-  const d = (digitsOnly || '').replace(/\D/g, '');
-  if (d.length === 11 && d.startsWith('1')) return d.slice(1);
-  return d;
-};
+// const normalizeUsPhone = (digitsOnly: string) => {
+//   const d = (digitsOnly || '').replace(/\D/g, '');
+//   if (d.length === 11 && d.startsWith('1')) return d.slice(1);
+//   return d;
+// };
 
-const isValidUsPhone = (digitsOnly: string) => normalizeUsPhone(digitsOnly).length === 10;
+// const isValidUsPhone = (digitsOnly: string) => normalizeUsPhone(digitsOnly).length === 10;
 
 const API_BASE_URL =
   (import.meta as any).env?.VITE_API_BASE_URL ||
@@ -25,23 +25,27 @@ const UpdateBuyBox: React.FC = () => {
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  // const [phone, setPhone] = useState('');
   const [isSending, setIsSending] = useState(false);
 
   const [error, setError] = useState('');
   const [sentAt, setSentAt] = useState<number | null>(null);
 
   const emailNorm = useMemo(() => normalizeEmail(email), [email]);
-  const phone10 = useMemo(() => normalizeUsPhone(phone), [phone]);
+  // const phone10 = useMemo(() => normalizeUsPhone(phone), [phone]);
 
   const emailOk = useMemo(() => EMAIL_REGEX.test(emailNorm), [emailNorm]);
-  const phoneOk = useMemo(() => phone10.length === 10, [phone10]);
+  // const phoneOk = useMemo(() => phone10.length === 10, [phone10]);
 
   // key is tied to the specific email+phone combo
+  // const sentStorageKey = useMemo(() => {
+  //   if (!emailOk || !phoneOk) return '';
+  //   return `wdf_update_link_sent:${emailNorm}:${phone10}`;
+  // }, [emailOk, phoneOk, emailNorm, phone10]);
   const sentStorageKey = useMemo(() => {
-    if (!emailOk || !phoneOk) return '';
-    return `wdf_update_link_sent:${emailNorm}:${phone10}`;
-  }, [emailOk, phoneOk, emailNorm, phone10]);
+    if (!emailOk) return '';
+    return `wdf_update_link_sent:${emailNorm}`;
+  }, [emailOk, emailNorm]);
 
   // load any prior "sent" flag for this email+phone
   useEffect(() => {
@@ -73,7 +77,8 @@ const UpdateBuyBox: React.FC = () => {
   }, [sentStorageKey]);
 
   const sentForThisPair = !!sentAt;
-  const canSend = emailOk && phoneOk && !isSending && !sentForThisPair;
+  // const canSend = emailOk && phoneOk && !isSending && !sentForThisPair;
+  const canSend = emailOk && !isSending && !sentForThisPair;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +93,8 @@ const UpdateBuyBox: React.FC = () => {
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailNorm, phone: phone10 }),
+        // body: JSON.stringify({ email: emailNorm, phone: phone10 }),
+        body: JSON.stringify({ email: emailNorm }),
       });
 
       if (!res.ok) {
@@ -110,7 +116,8 @@ const UpdateBuyBox: React.FC = () => {
         } catch {}
       }
     } catch (e: any) {
-      setError(e?.message || 'No profile found. Please double-check email and phone.');
+      // setError(e?.message || 'No profile found. Please double-check email and phone.');
+      setError(e?.message || 'No profile found. Please double-check email.');
     } finally {
       setIsSending(false);
     }
@@ -161,8 +168,12 @@ const UpdateBuyBox: React.FC = () => {
             <h2 className={`text-3xl md:text-4xl font-black tracking-tight uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
               Update Your Buy Box
             </h2>
-            <p className={`mt-4 text-sm font-bold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+            {/* <p className={`mt-4 text-sm font-bold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
               Enter the same email and phone number you used when creating your account.
+              We’ll email you a secure link to open your saved Buy Box and edit it.
+            </p> */}
+            <p className={`mt-4 text-sm font-bold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+              Enter the email you used when creating your account.
               We’ll email you a secure link to open your saved Buy Box and edit it.
             </p>
 
@@ -189,7 +200,7 @@ const UpdateBuyBox: React.FC = () => {
                 />
               </div>
 
-              <div className="space-y-3">
+              {/* <div className="space-y-3">
                 <label
                   className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
                     isDarkMode ? 'text-slate-400' : 'text-slate-500'
@@ -209,7 +220,7 @@ const UpdateBuyBox: React.FC = () => {
                       : 'bg-slate-50 border-slate-100 text-slate-900 focus:ring-blue-600/10 focus:border-blue-200 focus:bg-white'
                   }`}
                 />
-              </div>
+              </div> */}
 
               <button
                 disabled={!canSend}
