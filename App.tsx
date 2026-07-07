@@ -2335,6 +2335,168 @@ const commercialOtherMissing =
             </section>
           </form>
         </main>
+
+        <footer className="mt-20 px-6 pb-16">
+          <div className="max-w-5xl mx-auto">
+            <div
+              className={`rounded-[2.5rem] p-8 md:p-10 border-2 shadow-2xl relative overflow-hidden ${
+                isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'
+              }`}
+            >
+              <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-16 -left-16 w-40 h-40 bg-purple-600/5 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative z-10">
+                <div
+                  className={`flex flex-col sm:flex-row sm:items-center gap-4 mb-8 pb-6 border-b ${
+                    isDarkMode ? 'border-slate-700' : 'border-slate-100'
+                  }`}
+                >
+                  <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/25 shrink-0">
+                    <Smartphone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3
+                      className={`text-sm font-black uppercase tracking-[0.2em] ${
+                        isDarkMode ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
+                      Text Message Notice
+                    </h3>
+                    <p
+                      className={`text-[10px] font-bold uppercase tracking-[0.25em] mt-1 ${
+                        isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                      }`}
+                    >
+                      Compliance &amp; Communications
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-5 mb-8">
+                  <div
+                    className={`p-5 rounded-2xl border-2 ${
+                      isDarkMode
+                        ? 'bg-slate-900/50 border-slate-700'
+                        : 'bg-slate-50/80 border-slate-100'
+                    }`}
+                  >
+                    <ShieldCheck
+                      className={`w-5 h-5 mb-3 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                    />
+                    <p
+                      className={`text-[11px] font-bold leading-relaxed ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      Messaging frequency may vary. Message and data rates may apply. Text{' '}
+                      <span className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        STOP
+                      </span>{' '}
+                      anytime to opt out.
+                    </p>
+                  </div>
+
+                  <div
+                    className={`p-5 rounded-2xl border-2 ${
+                      isDarkMode
+                        ? 'bg-slate-900/50 border-slate-700'
+                        : 'bg-slate-50/80 border-slate-100'
+                    }`}
+                  >
+                    <Info
+                      className={`w-5 h-5 mb-3 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}
+                    />
+                    <p
+                      className={`text-[11px] font-bold leading-relaxed ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      You can expect to receive text messages with matching properties and buy box
+                      set ups.
+                    </p>
+                  </div>
+
+                  <div
+                    className={`p-5 rounded-2xl border-2 ${
+                      isDarkMode
+                        ? 'bg-slate-900/50 border-slate-700'
+                        : 'bg-slate-50/80 border-slate-100'
+                    }`}
+                  >
+                    <PhoneCall
+                      className={`w-5 h-5 mb-3 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}
+                    />
+                    <p
+                      className={`text-[11px] font-bold leading-relaxed ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      For assistance, text{' '}
+                      <span className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        HELP
+                      </span>{' '}
+                      or visit{' '}
+                      <a
+                        href="https://wholesaledealfinder.ai"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`font-black underline underline-offset-2 ${
+                          isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+                        }`}
+                      >
+                        wholesaledealfinder.ai
+                      </a>
+                      .
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t ${
+                    isDarkMode ? 'border-slate-700' : 'border-slate-100'
+                  }`}
+                >
+                  <p
+                    className={`text-[10px] font-bold uppercase tracking-[0.15em] ${
+                      isDarkMode ? 'text-slate-500' : 'text-slate-400'
+                    }`}
+                  >
+                    Legal &amp; Policy Documents
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://wholesaledealfinder.ai/wp-content/uploads/2026/02/WholesaleDealFinder_Privacy_Policy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                        isDarkMode
+                          ? 'bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white'
+                          : 'bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white'
+                      }`}
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Privacy Policy
+                    </a>
+                    <a
+                      href="https://wholesaledealfinder.ai/wp-content/uploads/2026/02/WholesaleDealFinder_Terms_of_Use.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                        isDarkMode
+                          ? 'bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white'
+                          : 'bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white'
+                      }`}
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Terms of Service
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
