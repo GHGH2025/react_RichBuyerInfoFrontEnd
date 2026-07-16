@@ -32,6 +32,7 @@ type TrackPerson = {
   phone: string;
   name: string;
   active: boolean;
+  participant: string;
 };
 
 type TrackConfig = {
@@ -243,6 +244,7 @@ const WhatsAppGroupsConfig: React.FC = () => {
           phone: p.phone,
           name: p.name || '',
           active: p.active !== false,
+          participant: p.participant || '',
         };
       }
     }
@@ -265,7 +267,7 @@ const WhatsAppGroupsConfig: React.FC = () => {
     setSelectedPeople(prev => {
       const next = { ...prev };
       if (next[p.phone]) delete next[p.phone];
-      else next[p.phone] = { phone: p.phone, name: '', active: true };
+      else next[p.phone] = { phone: p.phone, name: '', active: true, participant: p.jid || '' };
       return next;
     });
   };
