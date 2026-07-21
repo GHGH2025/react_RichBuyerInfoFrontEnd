@@ -31,6 +31,7 @@ type WhatsappParticipant = {
 type TrackPerson = {
   phone: string;
   name: string;
+  email: string;
   active: boolean;
   participant: string;
 };
@@ -243,6 +244,7 @@ const WhatsAppGroupsConfig: React.FC = () => {
         map[p.phone] = {
           phone: p.phone,
           name: p.name || '',
+          email: p.email || '',
           active: p.active !== false,
           participant: p.participant || '',
         };
@@ -267,7 +269,14 @@ const WhatsAppGroupsConfig: React.FC = () => {
     setSelectedPeople(prev => {
       const next = { ...prev };
       if (next[p.phone]) delete next[p.phone];
-      else next[p.phone] = { phone: p.phone, name: '', active: true, participant: p.jid || '' };
+      else
+        next[p.phone] = {
+          phone: p.phone,
+          name: '',
+          email: '',
+          active: true,
+          participant: p.jid || '',
+        };
       return next;
     });
   };
@@ -276,6 +285,13 @@ const WhatsAppGroupsConfig: React.FC = () => {
     setSelectedPeople(prev => {
       if (!prev[phone]) return prev;
       return { ...prev, [phone]: { ...prev[phone], name } };
+    });
+  };
+
+  const setPersonEmail = (phone: string, email: string) => {
+    setSelectedPeople(prev => {
+      if (!prev[phone]) return prev;
+      return { ...prev, [phone]: { ...prev[phone], email } };
     });
   };
 
@@ -382,7 +398,7 @@ const WhatsAppGroupsConfig: React.FC = () => {
                   <span className="text-[var(--accent)]"> Tracker</span>
                 </h1>
                 <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[var(--muted)]">
-                  Pick a WhatsApp group, choose who to listen to, and save inbound messages from those numbers.
+                  Pick a WhatsApp group, choose who to listen to, and set each seller&apos;s email so listings map to Podio wholesalers.
                 </p>
               </div>
 
@@ -688,31 +704,45 @@ const WhatsAppGroupsConfig: React.FC = () => {
                                   </div>
 
                                   {selected && (
-                                    <div className="mt-2.5 flex flex-col sm:flex-row gap-2.5">
-                                      <input
-                                        type="text"
-                                        placeholder="Display name (optional)"
-                                        value={selectedPeople[p.phone]?.name || ''}
-                                        onChange={e => setPersonName(p.phone, e.target.value)}
-                                        className="flex-1 px-3 py-2 rounded-xl border border-[var(--line)] bg-white text-sm outline-none focus:border-[var(--accent)]"
-                                      />
-                                      <label className="inline-flex items-center gap-2 shrink-0 px-1">
-                                        <button
-                                          type="button"
-                                          role="switch"
-                                          aria-checked={selectedPeople[p.phone]?.active !== false}
-                                          onClick={() =>
-                                            setPersonActive(
-                                              p.phone,
-                                              !(selectedPeople[p.phone]?.active !== false)
-                                            )
-                                          }
-                                          className={`toggle ${
-                                            selectedPeople[p.phone]?.active !== false ? 'on' : ''
-                                          }`}
+                                    <div className="mt-2.5 flex flex-col gap-2.5">
+                                      <div className="flex flex-col sm:flex-row gap-2.5">
+                                        <input
+                                          type="text"
+                                          placeholder="Display name (optional)"
+                                          value={selectedPeople[p.phone]?.name || ''}
+                                          onChange={e => setPersonName(p.phone, e.target.value)}
+                                          className="flex-1 px-3 py-2 rounded-xl border border-[var(--line)] bg-white text-sm outline-none focus:border-[var(--accent)]"
                                         />
-                                        <span className="text-xs text-[var(--muted)]">Active</span>
-                                      </label>
+                                        <input
+                                          type="email"
+                                          placeholder="Seller email (for Podio map)"
+                                          value={selectedPeople[p.phone]?.email || ''}
+                                          onChange={e => setPersonEmail(p.phone, e.target.value)}
+                                          className="flex-1 px-3 py-2 rounded-xl border border-[var(--line)] bg-white text-sm outline-none focus:border-[var(--accent)]"
+                                        />
+                                        <label className="inline-flex items-center gap-2 shrink-0 px-1">
+                                          <button
+                                            type="button"
+                                            role="switch"
+                                            aria-checked={selectedPeople[p.phone]?.active !== false}
+                                            onClick={() =>
+                                              setPersonActive(
+                                                p.phone,
+                                                !(selectedPeople[p.phone]?.active !== false)
+                                              )
+                                            }
+                                            className={`toggle ${
+                                              selectedPeople[p.phone]?.active !== false ? 'on' : ''
+                                            }`}
+                                          />
+                                          <span className="text-xs text-[var(--muted)]">Active</span>
+                                        </label>
+                                      </div>
+                                      {!selectedPeople[p.phone]?.email?.trim() && (
+                                        <p className="text-[11px] text-[var(--muted)]">
+                                          Add the same email as in direct wholesalers to map this seller in Podio.
+                                        </p>
+                                      )}
                                     </div>
                                   )}
                                 </div>
