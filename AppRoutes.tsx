@@ -4,6 +4,7 @@ import App from "./App";
 import UpdateBuyBox from "./UpdateBuyBox";
 import WhatsAppGroupsConfig from "./WhatsAppGroupsConfig";
 import PrivacyPolicy from "./PrivacyPolicy";
+import TermsOfService from "./TermsOfService";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -12,6 +13,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/Update-My-BuyBox" element={<UpdateBuyBox />} />
       <Route path="/whatsapp-groups" element={<WhatsAppGroupsConfig />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
