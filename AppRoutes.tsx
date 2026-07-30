@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
 import UpdateBuyBox from "./UpdateBuyBox";
 import WhatsAppGroupsConfig from "./WhatsAppGroupsConfig";
+import PrivacyPolicy from "./PrivacyPolicy";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<App />} />
       <Route path="/Update-My-BuyBox" element={<UpdateBuyBox />} />
       <Route path="/whatsapp-groups" element={<WhatsAppGroupsConfig />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

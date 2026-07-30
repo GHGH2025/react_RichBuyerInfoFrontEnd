@@ -111,6 +111,9 @@ export interface ContactInfo {
 
   // multi-select
   communicationPreference: CommunicationPreference[];
+
+  // TCR SMS marketing opt-in (must be unchecked by default)
+  smsOptIn: boolean;
 }
 
 export interface PropertyTypeState {

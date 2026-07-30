@@ -1,5 +1,6 @@
 // App.tsx (UPDATED) — restored inner "Choose Specific Type" dropdown for Multi/Condo/Land/Commercial
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Building2,
   User,
@@ -101,7 +102,7 @@ const App: React.FC = () => {
   const [citySearch, setCitySearch] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState<AppState>({
-    contact: { name: '', email: '', callWhatsapp: '', communicationPreference: [] },
+    contact: { name: '', email: '', callWhatsapp: '', communicationPreference: [], smsOptIn: false },
     properties: {
       multiFamily: { ...INITIAL_PROPERTY_STATE },
       condo: { ...INITIAL_PROPERTY_STATE },
@@ -154,7 +155,7 @@ const [originalPhone10, setOriginalPhone10] = useState('');
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
-  const updateContact = (field: keyof Omit<ContactInfo, 'communicationPreference'>, value: string) => {
+  const updateContact = (field: keyof Omit<ContactInfo, 'communicationPreference' | 'smsOptIn'>, value: string) => {
     setFormData(prev => ({
       ...prev,
       contact: { ...prev.contact, [field]: value },
@@ -173,6 +174,13 @@ const [originalPhone10, setOriginalPhone10] = useState('');
         },
       };
     });
+  };
+
+  const setSmsOptIn = (value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      contact: { ...prev.contact, smsOptIn: value },
+    }));
   };
 
   const toggleProperty = (key: keyof AppState['properties']) => {
@@ -454,7 +462,8 @@ const updatePreference = (
       isEmailValid &&
       contact.callWhatsapp.trim() !== '' &&
       Array.isArray(contact.communicationPreference) &&
-      contact.communicationPreference.length > 0;
+      contact.communicationPreference.length > 0 &&
+      contact.smsOptIn === true;
 
     if (enabledKeys.length === 0) return false;
 
@@ -515,6 +524,8 @@ const updatePreference = (
       steps.push('Enter a valid Email address');
     } else if (!contact.communicationPreference || contact.communicationPreference.length === 0) {
       steps.push('Select at least 1 Communication Preference');
+    } else if (!contact.smsOptIn) {
+      steps.push('Agree to SMS Marketing opt-in');
     }
 
     if (enabledKeys.length === 0) {
@@ -776,8 +787,16 @@ useEffect(() => {
           : null
       );
 
-      setFormData(submission); // ✅ fills entire form exactly as stored
-      setOriginalSnapshot(stableStringify(submission)); // ✅ baseline for "has changes"
+      const hydratedSubmission = {
+        ...submission,
+        contact: {
+          ...submission.contact,
+          smsOptIn: !!submission?.contact?.smsOptIn,
+        },
+      };
+
+      setFormData(hydratedSubmission); // ✅ fills entire form exactly as stored
+      setOriginalSnapshot(stableStringify(hydratedSubmission)); // ✅ baseline for "has changes"
 
       const hydratedEmail = normalizeEmail(submission?.contact?.email || '');
       const hydratedPhone10 = normalizeUsPhone(
@@ -1415,6 +1434,56 @@ const handleSave = async () => {
                       </label>
                     ))}
                   </div>
+                </div>
+
+                {/* SMS Opt-In Consent (TCR) */}
+                <div className="md:col-span-2 space-y-3 pt-2">
+                  <label
+                    className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                      isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                    }`}
+                  >
+                    <ShieldCheck size={12} className="text-blue-600" /> SMS Marketing Consent*
+                  </label>
+                  <label
+                    className={`flex items-start gap-4 cursor-pointer select-none p-5 md:p-6 rounded-2xl border-2 transition-all ${
+                      formData.contact.smsOptIn
+                        ? isDarkMode
+                          ? 'bg-blue-600/10 border-blue-500'
+                          : 'bg-blue-50 border-blue-300'
+                        : isDarkMode
+                        ? 'bg-slate-900 border-slate-700 hover:border-slate-600'
+                        : 'bg-slate-50 border-slate-100 hover:border-blue-100'
+                    }`}
+                  >
+                    <input
+                      required
+                      type="checkbox"
+                      checked={!!formData.contact.smsOptIn}
+                      onChange={e => setSmsOptIn(e.target.checked)}
+                      className="mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span
+                      className={`text-sm font-medium leading-relaxed ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                      }`}
+                    >
+                      By checking this box, I agree to receive SMS messages about Marketing from
+                      Wholesaledealfinder.ai at the phone number provided above. The SMS frequency may
+                      vary. Data rates may apply. Text HELP to (754-200-1204) for assistance. Reply STOP
+                      to opt out of receiving SMS messages. For more information, visit our{' '}
+                      <Link
+                        to="/privacy-policy"
+                        className={`underline font-bold ${
+                          isDarkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'
+                        }`}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        Privacy Policy
+                      </Link>
+                      .
+                    </span>
+                  </label>
                 </div>
               </div>
             </section>
@@ -2465,10 +2534,8 @@ const commercialOtherMissing =
                     Legal &amp; Policy Documents
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <a
-                      href="https://wholesaledealfinder.ai/wp-content/uploads/2026/02/WholesaleDealFinder_Privacy_Policy.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to="/privacy-policy"
                       className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
                         isDarkMode
                           ? 'bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white'
@@ -2477,7 +2544,7 @@ const commercialOtherMissing =
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       Privacy Policy
-                    </a>
+                    </Link>
                     <a
                       href="https://wholesaledealfinder.ai/wp-content/uploads/2026/02/WholesaleDealFinder_Terms_of_Use.pdf"
                       target="_blank"
