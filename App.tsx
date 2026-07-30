@@ -2545,10 +2545,8 @@ const commercialOtherMissing =
                       <ShieldCheck className="w-3.5 h-3.5" />
                       Privacy Policy
                     </Link>
-                    <a
-                      href="https://wholesaledealfinder.ai/wp-content/uploads/2026/02/WholesaleDealFinder_Terms_of_Use.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to="/terms-of-service"
                       className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
                         isDarkMode
                           ? 'bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white'
@@ -2557,7 +2555,7 @@ const commercialOtherMissing =
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       Terms of Service
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
