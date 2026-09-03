@@ -1468,10 +1468,7 @@ const handleSave = async () => {
                         isDarkMode ? 'text-slate-300' : 'text-slate-700'
                       }`}
                     >
-                      By checking this box, I agree to receive SMS messages about Marketing from
-                      Wholesaledealfinder.ai at the phone number provided above. The SMS frequency may
-                      vary. Data rates may apply. Text HELP to (754-200-1204) for assistance. Reply STOP
-                      to opt out of receiving SMS messages. For more information, visit our{' '}
+                      By submitting your phone number, you agree to receive SMS text messages from Wholesale Home Sales, LLC / WholesaleDealFinder.AI. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out at any time. For help, text 754-200-1204. View our Privacy Policy.
                       <Link
                         to="/privacy-policy"
                         className={`underline font-bold ${

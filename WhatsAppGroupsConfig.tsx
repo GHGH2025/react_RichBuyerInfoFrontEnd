@@ -24,6 +24,8 @@ type WhatsappGroup = {
 
 type WhatsappParticipant = {
   jid: string;
+  lid?: string;
+  phoneNumber?: string;
   phone: string;
   admin: string | null;
 };
@@ -34,7 +36,13 @@ type TrackPerson = {
   email: string;
   active: boolean;
   participant: string;
+  participant_lid?: string;
+  participant_pn?: string;
 };
+
+function trackKey(p: { phone?: string; jid?: string; participant?: string }) {
+  return String(p.phone || p.jid || p.participant || '').trim();
+}
 
 type TrackConfig = {
   _id: string;
@@ -201,7 +209,7 @@ const WhatsAppGroupsConfig: React.FC = () => {
   const loadParticipantsFor = async (jid: string) => {
     if (!jid) {
       setParticipants([]);
-      return;
+      return [] as WhatsappParticipant[];
     }
     setLoadingParticipants(true);
     setError('');
@@ -209,10 +217,13 @@ const WhatsAppGroupsConfig: React.FC = () => {
       const data = await waFetch<{ participants: WhatsappParticipant[] }>(
         `/groups/${encodeURIComponent(jid)}/participants`
       );
-      setParticipants(data.participants || []);
+      const list = data.participants || [];
+      setParticipants(list);
+      return list;
     } catch (e: any) {
       setError(e?.message || 'Failed to load participants');
       setParticipants([]);
+      return [] as WhatsappParticipant[];
     } finally {
       setLoadingParticipants(false);
     }
@@ -240,18 +251,39 @@ const WhatsAppGroupsConfig: React.FC = () => {
 
     const map: Record<string, TrackPerson> = {};
     for (const p of cfg.people || []) {
-      if (p.phone) {
-        map[p.phone] = {
-          phone: p.phone,
-          name: p.name || '',
-          email: p.email || '',
-          active: p.active !== false,
-          participant: p.participant || '',
-        };
-      }
+      const key = trackKey(p);
+      if (!key) continue;
+      map[key] = {
+        phone: p.phone || '',
+        name: p.name || '',
+        email: p.email || '',
+        active: p.active !== false,
+        participant: p.participant || '',
+        participant_lid: p.participant_lid || '',
+        participant_pn: p.participant_pn || '',
+      };
     }
     setSelectedPeople(map);
-    await loadParticipantsFor(cfg.group_jid);
+    const live = await loadParticipantsFor(cfg.group_jid);
+    setSelectedPeople(prev => {
+      const next = { ...prev };
+      for (const [key, person] of Object.entries(next)) {
+        const match = live.find(
+          p =>
+            (person.phone && p.phone === person.phone) ||
+            (person.participant && p.jid === person.participant) ||
+            trackKey(p) === key
+        );
+        if (!match) continue;
+        next[key] = {
+          ...person,
+          participant: match.jid || person.participant,
+          participant_lid: match.lid || person.participant_lid || '',
+          participant_pn: match.phoneNumber || person.participant_pn || '',
+        };
+      }
+      return next;
+    });
   };
 
   const onSelectGroup = async (jid: string) => {
@@ -265,40 +297,43 @@ const WhatsAppGroupsConfig: React.FC = () => {
   };
 
   const togglePerson = (p: WhatsappParticipant) => {
-    if (!p.phone) return;
+    const key = trackKey(p);
+    if (!key) return;
     setSelectedPeople(prev => {
       const next = { ...prev };
-      if (next[p.phone]) delete next[p.phone];
+      if (next[key]) delete next[key];
       else
-        next[p.phone] = {
-          phone: p.phone,
+        next[key] = {
+          phone: p.phone || '',
           name: '',
           email: '',
           active: true,
           participant: p.jid || '',
+          participant_lid: p.lid || '',
+          participant_pn: p.phoneNumber || '',
         };
       return next;
     });
   };
 
-  const setPersonName = (phone: string, name: string) => {
+  const setPersonName = (key: string, name: string) => {
     setSelectedPeople(prev => {
-      if (!prev[phone]) return prev;
-      return { ...prev, [phone]: { ...prev[phone], name } };
+      if (!prev[key]) return prev;
+      return { ...prev, [key]: { ...prev[key], name } };
     });
   };
 
-  const setPersonEmail = (phone: string, email: string) => {
+  const setPersonEmail = (key: string, email: string) => {
     setSelectedPeople(prev => {
-      if (!prev[phone]) return prev;
-      return { ...prev, [phone]: { ...prev[phone], email } };
+      if (!prev[key]) return prev;
+      return { ...prev, [key]: { ...prev[key], email } };
     });
   };
 
-  const setPersonActive = (phone: string, active: boolean) => {
+  const setPersonActive = (key: string, active: boolean) => {
     setSelectedPeople(prev => {
-      if (!prev[phone]) return prev;
-      return { ...prev, [phone]: { ...prev[phone], active } };
+      if (!prev[key]) return prev;
+      return { ...prev, [key]: { ...prev[key], active } };
     });
   };
 
@@ -530,14 +565,14 @@ const WhatsAppGroupsConfig: React.FC = () => {
                           <div className="mt-3 flex flex-wrap gap-1.5">
                             {(cfg.people || []).slice(0, 4).map(p => (
                               <span
-                                key={p.phone}
+                                key={p.phone || p.participant}
                                 className={`mono text-[10px] px-2 py-1 rounded-md ${
                                   p.active
                                     ? 'bg-white/90 text-[var(--ink)] border border-[var(--line)]'
                                     : 'bg-transparent text-[var(--muted)] line-through'
                                 }`}
                               >
-                                {p.name || p.phone}
+                                {p.name || p.phone || p.participant}
                               </span>
                             ))}
                             {(cfg.people || []).length > 4 && (
@@ -658,7 +693,8 @@ const WhatsAppGroupsConfig: React.FC = () => {
                         )}
 
                         {filteredParticipants.map(p => {
-                          const selected = !!selectedPeople[p.phone];
+                          const key = trackKey(p);
+                          const selected = !!selectedPeople[key];
                           return (
                             <div
                               key={p.jid}
@@ -669,7 +705,7 @@ const WhatsAppGroupsConfig: React.FC = () => {
                               <div className="flex items-start gap-3 px-4 py-3">
                                 <button
                                   type="button"
-                                  disabled={!p.phone}
+                                  disabled={!key}
                                   onClick={() => togglePerson(p)}
                                   className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
                                     selected
@@ -709,36 +745,36 @@ const WhatsAppGroupsConfig: React.FC = () => {
                                         <input
                                           type="text"
                                           placeholder="Display name (optional)"
-                                          value={selectedPeople[p.phone]?.name || ''}
-                                          onChange={e => setPersonName(p.phone, e.target.value)}
+                                          value={selectedPeople[key]?.name || ''}
+                                          onChange={e => setPersonName(key, e.target.value)}
                                           className="flex-1 px-3 py-2 rounded-xl border border-[var(--line)] bg-white text-sm outline-none focus:border-[var(--accent)]"
                                         />
                                         <input
                                           type="email"
                                           placeholder="Seller email (for Podio map)"
-                                          value={selectedPeople[p.phone]?.email || ''}
-                                          onChange={e => setPersonEmail(p.phone, e.target.value)}
+                                          value={selectedPeople[key]?.email || ''}
+                                          onChange={e => setPersonEmail(key, e.target.value)}
                                           className="flex-1 px-3 py-2 rounded-xl border border-[var(--line)] bg-white text-sm outline-none focus:border-[var(--accent)]"
                                         />
                                         <label className="inline-flex items-center gap-2 shrink-0 px-1">
                                           <button
                                             type="button"
                                             role="switch"
-                                            aria-checked={selectedPeople[p.phone]?.active !== false}
+                                            aria-checked={selectedPeople[key]?.active !== false}
                                             onClick={() =>
                                               setPersonActive(
-                                                p.phone,
-                                                !(selectedPeople[p.phone]?.active !== false)
+                                                key,
+                                                !(selectedPeople[key]?.active !== false)
                                               )
                                             }
                                             className={`toggle ${
-                                              selectedPeople[p.phone]?.active !== false ? 'on' : ''
+                                              selectedPeople[key]?.active !== false ? 'on' : ''
                                             }`}
                                           />
                                           <span className="text-xs text-[var(--muted)]">Active</span>
                                         </label>
                                       </div>
-                                      {!selectedPeople[p.phone]?.email?.trim() && (
+                                      {!selectedPeople[key]?.email?.trim() && (
                                         <p className="text-[11px] text-[var(--muted)]">
                                           Add the same email as in direct wholesalers to map this seller in Podio.
                                         </p>
