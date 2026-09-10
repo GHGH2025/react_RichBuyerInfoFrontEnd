@@ -99,6 +99,7 @@ const App: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
+  const [toast, setToast] = useState('');
   const [citySearch, setCitySearch] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState<AppState>({
@@ -152,6 +153,16 @@ const [saveError, setSaveError] = useState('');
 const [originalEmail, setOriginalEmail] = useState('');
 const [originalPhone10, setOriginalPhone10] = useState('');
 
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(''), 6000);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+
+  const showToast = (message: string) => {
+    if (!message) return;
+    setToast(message);
+  };
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
@@ -580,6 +591,26 @@ const updatePreference = (
     
 const canSubmitNow = isFormValid && !isSubmitting && !isDuplicateBlocked && !isUniquenessPending;
 
+  const getBlockedSubmitMessage = (action: 'submit' | 'save') => {
+    if (!isFormValid) {
+      return formStatusSummary.length > 0
+        ? `To ${action}, please: ${formStatusSummary.join(' • ')}`
+        : `Please complete the required fields before you ${action}.`;
+    }
+    if (isUniquenessPending) {
+      return 'Please wait while we verify your email and phone number.';
+    }
+    if (isDuplicateBlocked) {
+      return isUpdateMode
+        ? `This ${duplicateLabel || 'contact information'} is already used by another profile. Please enter a different ${duplicateLabel || 'value'} to save.`
+        : `This ${duplicateLabel || 'contact information'} was already used. To update your Buy Box, visit wholesaledealfinder.ai`;
+    }
+    if (action === 'save' && !isDirty) {
+      return 'Make a change to enable Save.';
+    }
+    return '';
+  };
+
 
 const duplicateLabel =
   emailExists && phoneExists
@@ -841,7 +872,10 @@ useEffect(() => {
 
 
 const handleSave = async () => {
-  if (!canSaveNow) return;
+  if (!canSaveNow) {
+    showToast(getBlockedSubmitMessage('save'));
+    return;
+  }
 
   setSaveError('');
   setSaveSuccess(false);
@@ -879,17 +913,22 @@ const handleSave = async () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (e: any) {
     console.error(e);
-    setSaveError(e?.message || 'Failed to save changes. Please try again.');
+    const msg = e?.message || 'Failed to save changes. Please try again.';
+    setSaveError(msg);
+    showToast(msg);
   } finally {
     setIsSubmitting(false);
   }
 };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    if (isUpdateMode) return;
     e.preventDefault();
-    if (!isFormValid) return;
+    if (isUpdateMode) return;
     if (isSubmitting) return;
+    if (!isFormValid || isDuplicateBlocked || isUniquenessPending) {
+      showToast(getBlockedSubmitMessage('submit'));
+      return;
+    }
 
     setSubmitError('');
     setIsSubmitting(true);
@@ -927,7 +966,9 @@ const handleSave = async () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       console.error('Submit error:', err);
-      setSubmitError(err?.message || 'Something went wrong. Please try again.');
+      const msg = err?.message || 'Something went wrong. Please try again.';
+      setSubmitError(msg);
+      showToast(msg);
       setIsSubmitting(false);
       return;
     }
@@ -1052,6 +1093,22 @@ const handleSave = async () => {
           isDarkMode ? 'bg-slate-900' : 'bg-[#FBFBFF]'
         } transition-colors duration-500 pb-20`}
       >
+        {toast && (
+          <div className="fixed top-24 inset-x-4 z-[100] flex justify-center">
+            <div
+              role="alert"
+              onClick={() => setToast('')}
+              className={`max-w-lg w-full flex items-start gap-3 px-5 py-4 rounded-2xl border-2 shadow-2xl cursor-pointer ${
+                isDarkMode
+                  ? 'bg-slate-900 border-rose-500/40 text-rose-100'
+                  : 'bg-white border-rose-200 text-rose-800'
+              }`}
+            >
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-500" />
+              <p className="text-sm font-bold leading-relaxed text-left">{toast}</p>
+            </div>
+          </div>
+        )}
         {isHydrating && (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
     <div className={`rounded-[2rem] px-10 py-8 shadow-2xl border-2 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-100 text-slate-900'}`}>
@@ -1125,7 +1182,7 @@ const handleSave = async () => {
         </nav>
 
         <main className="max-w-5xl mx-auto px-6 py-16">
-          <form onSubmit={handleSubmit} className="space-y-20">
+          <form noValidate onSubmit={handleSubmit} className="space-y-20">
             {/* ✅ Disclaimer / Beta Access Box */}
             <section className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <div
@@ -1434,53 +1491,6 @@ const handleSave = async () => {
                       </label>
                     ))}
                   </div>
-                </div>
-
-                {/* SMS Opt-In Consent (TCR) */}
-                <div className="md:col-span-2 space-y-3 pt-2">
-                  <label
-                    className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
-                      isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                    }`}
-                  >
-                    <ShieldCheck size={12} className="text-blue-600" /> SMS Marketing Consent*
-                  </label>
-                  <label
-                    className={`flex items-start gap-4 cursor-pointer select-none p-5 md:p-6 rounded-2xl border-2 transition-all ${
-                      formData.contact.smsOptIn
-                        ? isDarkMode
-                          ? 'bg-blue-600/10 border-blue-500'
-                          : 'bg-blue-50 border-blue-300'
-                        : isDarkMode
-                        ? 'bg-slate-900 border-slate-700 hover:border-slate-600'
-                        : 'bg-slate-50 border-slate-100 hover:border-blue-100'
-                    }`}
-                  >
-                    <input
-                      required
-                      type="checkbox"
-                      checked={!!formData.contact.smsOptIn}
-                      onChange={e => setSmsOptIn(e.target.checked)}
-                      className="mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                    />
-                    <span
-                      className={`text-sm font-medium leading-relaxed ${
-                        isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                      }`}
-                    >
-                      By submitting your phone number, you agree to receive SMS text messages from Wholesale Home Sales, LLC / WholesaleDealFinder.AI. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out at any time. For help, text 754-200-1204. View our Privacy Policy.
-                      <Link
-                        to="/privacy-policy"
-                        className={`underline font-bold ${
-                          isDarkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'
-                        }`}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        Privacy Policy
-                      </Link>
-                      .
-                    </span>
-                  </label>
                 </div>
               </div>
             </section>
@@ -2189,8 +2199,8 @@ const commercialOtherMissing =
                 <div className="max-w-2xl mx-auto space-y-10">
                  {isUpdateMode ? (
   <button
-    disabled={!canSaveNow}
     type="button"
+    aria-disabled={!canSaveNow}
     onClick={handleSave}
     className={`group w-full py-8 px-12 rounded-[2rem] text-2xl font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-6 active:scale-95 ${
       canSaveNow
@@ -2203,8 +2213,8 @@ const commercialOtherMissing =
   </button>
 ) : (
   <button
-    disabled={!isFormValid || isSubmitting || isDuplicateBlocked || isUniquenessPending}
     type="submit"
+    aria-disabled={!canSubmitNow}
     className={`group w-full py-8 px-12 rounded-[2rem] text-2xl font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-6 active:scale-95 ${
       isFormValid && !isSubmitting && !isDuplicateBlocked && !isUniquenessPending
         ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/40'
@@ -2215,6 +2225,51 @@ const commercialOtherMissing =
     <ArrowRight className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${(!isFormValid || isSubmitting) ? 'opacity-10' : ''}`} />
   </button>
 )}
+
+                  <div className="space-y-3 text-left">
+                    <label
+                      className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                        isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                      }`}
+                    >
+                      <ShieldCheck size={12} className="text-blue-600" /> SMS Marketing Consent*
+                    </label>
+                    <label
+                      className={`flex items-start gap-4 cursor-pointer select-none p-5 md:p-6 rounded-2xl border-2 transition-all ${
+                        formData.contact.smsOptIn
+                          ? isDarkMode
+                            ? 'bg-blue-600/10 border-blue-500'
+                            : 'bg-blue-50 border-blue-300'
+                          : isDarkMode
+                          ? 'bg-slate-900 border-slate-700 hover:border-slate-600'
+                          : 'bg-slate-50 border-slate-100 hover:border-blue-100'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={!!formData.contact.smsOptIn}
+                        onChange={e => setSmsOptIn(e.target.checked)}
+                        className="mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <span
+                        className={`text-sm font-medium leading-relaxed ${
+                          isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                        }`}
+                      >
+                        By submitting your phone number, you agree to receive SMS text messages from Wholesale Home Sales, LLC / WholesaleDealFinder.AI. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out at any time. For help, text 754-200-1204. View our Privacy Policy.
+                        <Link
+                          to="/privacy-policy"
+                          className={`underline font-bold ${
+                            isDarkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'
+                          }`}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          Privacy Policy
+                        </Link>
+                        .
+                      </span>
+                    </label>
+                  </div>
 
                   {submitError && (
                     <div className="px-8 py-5 rounded-[2rem] bg-rose-600/10 border border-rose-600/20">
