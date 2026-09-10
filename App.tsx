@@ -2256,7 +2256,19 @@ const commercialOtherMissing =
                           isDarkMode ? 'text-slate-300' : 'text-slate-700'
                         }`}
                       >
-                        By submitting your phone number, you agree to receive SMS text messages from Wholesale Home Sales, LLC / WholesaleDealFinder.AI. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out at any time. For help, text 754-200-1204. View our Privacy Policy.
+                        By submitting your phone number, you agree to receive SMS text messages from Wholesale Home Sales, LLC / WholesaleDealFinder.AI. You can expect to receive text messages with matching properties and buy box set ups. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out at any time. For assistance, text HELP or visit{' '}
+                        <a
+                          href="https://wholesaledealfinder.ai/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`underline font-bold ${
+                            isDarkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'
+                          }`}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          wholesaledealfinder.ai
+                        </a>
+                        . For help, text 754-200-1204. View our{' '}
                         <Link
                           to="/privacy-policy"
                           className={`underline font-bold ${
@@ -2265,6 +2277,16 @@ const commercialOtherMissing =
                           onClick={e => e.stopPropagation()}
                         >
                           Privacy Policy
+                        </Link>
+                        {' '}and{' '}
+                        <Link
+                          to="/terms-of-service"
+                          className={`underline font-bold ${
+                            isDarkMode ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-800'
+                          }`}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          Terms of Service
                         </Link>
                         .
                       </span>
@@ -2456,164 +2478,6 @@ const commercialOtherMissing =
             </section>
           </form>
         </main>
-
-        <footer className="mt-20 px-6 pb-16">
-          <div className="max-w-5xl mx-auto">
-            <div
-              className={`rounded-[2.5rem] p-8 md:p-10 border-2 shadow-2xl relative overflow-hidden ${
-                isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'
-              }`}
-            >
-              <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -top-16 -left-16 w-40 h-40 bg-purple-600/5 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10">
-                <div
-                  className={`flex flex-col sm:flex-row sm:items-center gap-4 mb-8 pb-6 border-b ${
-                    isDarkMode ? 'border-slate-700' : 'border-slate-100'
-                  }`}
-                >
-                  <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/25 shrink-0">
-                    <Smartphone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3
-                      className={`text-sm font-black uppercase tracking-[0.2em] ${
-                        isDarkMode ? 'text-white' : 'text-slate-900'
-                      }`}
-                    >
-                      Text Message Notice
-                    </h3>
-                    <p
-                      className={`text-[10px] font-bold uppercase tracking-[0.25em] mt-1 ${
-                        isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                      }`}
-                    >
-                      Compliance &amp; Communications
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-5 mb-8">
-                  <div
-                    className={`p-5 rounded-2xl border-2 ${
-                      isDarkMode
-                        ? 'bg-slate-900/50 border-slate-700'
-                        : 'bg-slate-50/80 border-slate-100'
-                    }`}
-                  >
-                    <ShieldCheck
-                      className={`w-5 h-5 mb-3 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
-                    />
-                    <p
-                      className={`text-[11px] font-bold leading-relaxed ${
-                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
-                      }`}
-                    >
-                      Messaging frequency may vary. Message and data rates may apply. Text{' '}
-                      <span className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                        STOP
-                      </span>{' '}
-                      anytime to opt out.
-                    </p>
-                  </div>
-
-                  <div
-                    className={`p-5 rounded-2xl border-2 ${
-                      isDarkMode
-                        ? 'bg-slate-900/50 border-slate-700'
-                        : 'bg-slate-50/80 border-slate-100'
-                    }`}
-                  >
-                    <Info
-                      className={`w-5 h-5 mb-3 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}
-                    />
-                    <p
-                      className={`text-[11px] font-bold leading-relaxed ${
-                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
-                      }`}
-                    >
-                      You can expect to receive text messages with matching properties and buy box
-                      set ups.
-                    </p>
-                  </div>
-
-                  <div
-                    className={`p-5 rounded-2xl border-2 ${
-                      isDarkMode
-                        ? 'bg-slate-900/50 border-slate-700'
-                        : 'bg-slate-50/80 border-slate-100'
-                    }`}
-                  >
-                    <PhoneCall
-                      className={`w-5 h-5 mb-3 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}
-                    />
-                    <p
-                      className={`text-[11px] font-bold leading-relaxed ${
-                        isDarkMode ? 'text-slate-300' : 'text-slate-600'
-                      }`}
-                    >
-                      For assistance, text{' '}
-                      <span className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                        HELP
-                      </span>{' '}
-                      or visit{' '}
-                      <a
-                        href="https://wholesaledealfinder.ai"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`font-black underline underline-offset-2 ${
-                          isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
-                        }`}
-                      >
-                        wholesaledealfinder.ai
-                      </a>
-                      .
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t ${
-                    isDarkMode ? 'border-slate-700' : 'border-slate-100'
-                  }`}
-                >
-                  <p
-                    className={`text-[10px] font-bold uppercase tracking-[0.15em] ${
-                      isDarkMode ? 'text-slate-500' : 'text-slate-400'
-                    }`}
-                  >
-                    Legal &amp; Policy Documents
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Link
-                      to="/privacy-policy"
-                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                        isDarkMode
-                          ? 'bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white'
-                      }`}
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Privacy Policy
-                    </Link>
-                    <Link
-                      to="/terms-of-service"
-                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                        isDarkMode
-                          ? 'bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-blue-600 hover:text-white'
-                      }`}
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Terms of Service
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );
