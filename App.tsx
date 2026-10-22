@@ -20,7 +20,9 @@ import {
   Smartphone,
   ShieldCheck,
   MapPin,
-  LayoutGrid
+  LayoutGrid,
+  X,
+  ExternalLink,
 } from 'lucide-react';
 import {
   AppState,
@@ -75,6 +77,12 @@ const normalizeEmail = (v: string) => (v || '').trim().toLowerCase();
 
 const ALL_CITIES_OPTION = 'All Cities';
 
+const WHOLESALERS_PAGE_URL =
+  'https://wholesaledealfinder.ai/add-your-wholesalers/#wpcf7-f37053-p37051-o1';
+
+/** TEMP: set false before shipping — skip form fill + API so Submit opens success modal */
+const DEV_BYPASS_SUBMIT = false;
+
 const INITIAL_PROPERTY_STATE: PropertyTypeState = {
   enabled: false,
   type: [], // ✅ now array
@@ -101,6 +109,11 @@ const App: React.FC = () => {
   const [submitError, setSubmitError] = useState<string>('');
   const [toast, setToast] = useState('');
   const [citySearch, setCitySearch] = useState<Record<string, string>>({});
+  const [showWholesalersModal, setShowWholesalersModal] = useState(false);
+
+  const openWholesalersModal = () => {
+    setShowWholesalersModal(true);
+  };
 
   const [formData, setFormData] = useState<AppState>({
     contact: { name: '', email: '', callWhatsapp: '', communicationPreference: [], smsOptIn: false },
@@ -925,6 +938,14 @@ const handleSave = async () => {
     e.preventDefault();
     if (isUpdateMode) return;
     if (isSubmitting) return;
+
+    if (DEV_BYPASS_SUBMIT) {
+      setIsSubmitted(true);
+      openWholesalersModal();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (!isFormValid || isDuplicateBlocked || isUniquenessPending) {
       showToast(getBlockedSubmitMessage('submit'));
       return;
@@ -963,6 +984,7 @@ const handleSave = async () => {
       await res.json();
 
       setIsSubmitted(true);
+      openWholesalersModal();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       console.error('Submit error:', err);
@@ -973,7 +995,7 @@ const handleSave = async () => {
       return;
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(false);
   };
 
 
@@ -982,7 +1004,7 @@ const handleSave = async () => {
     <div
       className={`min-h-screen ${
         isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'
-      } flex items-center justify-center p-6`}
+      } flex items-center justify-center p-6 relative`}
     >
       <div className="max-w-3xl w-full bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl p-10 md:p-14 text-center border-2 border-slate-100 dark:border-slate-700">
        
@@ -1074,6 +1096,15 @@ const handleSave = async () => {
               <p>Richard Burdette, Founder</p>
               <p className="font-black uppercase">WholesaleDealFinder.Ai</p>
             </div>
+
+            <button
+              type="button"
+              onClick={openWholesalersModal}
+              className="mt-8 w-full py-5 px-8 rounded-[1.5rem] text-sm font-black uppercase tracking-[0.2em] bg-blue-600 text-white shadow-xl shadow-blue-600/30 hover:bg-blue-700 transition-all flex items-center justify-center gap-3"
+            >
+              Continue to Step 2
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -1082,6 +1113,72 @@ const handleSave = async () => {
           You may now close this page.
         </p>
       </div>
+
+      {showWholesalersModal && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-6 bg-black/55 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wholesalers-modal-title"
+        >
+          <div
+            className={`w-full max-w-lg overflow-hidden rounded-[1.75rem] shadow-2xl border-2 ${
+              isDarkMode
+                ? 'bg-slate-900 border-slate-700'
+                : 'bg-white border-slate-100'
+            }`}
+          >
+            <div className="flex items-start justify-end px-5 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowWholesalersModal(false)}
+                className={`p-2.5 rounded-xl border-2 transition-all shrink-0 ${
+                  isDarkMode
+                    ? 'border-slate-700 text-slate-200 hover:bg-slate-800'
+                    : 'border-slate-100 text-slate-600 hover:border-blue-200'
+                }`}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="px-8 sm:px-10 pb-10 pt-2 text-center space-y-6">
+              <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <CheckCircle2 className="w-9 h-9 text-emerald-500" />
+              </div>
+
+              <div className="space-y-2">
+                <p
+                  id="wholesalers-modal-title"
+                  className={`text-xl sm:text-2xl font-black tracking-tight ${
+                    isDarkMode ? 'text-white' : 'text-slate-900'
+                  }`}
+                >
+                  Great — you completed Step 1!
+                </p>
+                <p
+                  className={`text-sm sm:text-base font-bold leading-relaxed ${
+                    isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                  }`}
+                >
+                  Now continue with Step 2 — add your wholesalers so our AI knows where to look.
+                </p>
+              </div>
+
+              <a
+                href={WHOLESALERS_PAGE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-3 w-full py-5 px-6 rounded-[1.25rem] text-sm font-black uppercase tracking-[0.15em] bg-blue-600 text-white shadow-xl shadow-blue-600/30 hover:bg-blue-700 transition-all"
+              >
+                Continue to Step 2
+                <ExternalLink size={18} />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2191,7 +2288,7 @@ const commercialOtherMissing =
             <section className="pt-16">
               <div
                 className={`p-14 rounded-[4rem] text-center border-4 transition-all duration-700 ${
-                  isFormValid
+                  DEV_BYPASS_SUBMIT || isFormValid
                     ? 'bg-blue-600/5 border-blue-600 shadow-[0_0_80px_rgba(37,99,235,0.15)]'
                     : 'bg-slate-50 border-slate-100 dark:bg-slate-800/30 dark:border-slate-800'
                 }`}
@@ -2214,15 +2311,15 @@ const commercialOtherMissing =
 ) : (
   <button
     type="submit"
-    aria-disabled={!canSubmitNow}
+    aria-disabled={DEV_BYPASS_SUBMIT ? false : !canSubmitNow}
     className={`group w-full py-8 px-12 rounded-[2rem] text-2xl font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-6 active:scale-95 ${
-      isFormValid && !isSubmitting && !isDuplicateBlocked && !isUniquenessPending
+      DEV_BYPASS_SUBMIT || (isFormValid && !isSubmitting && !isDuplicateBlocked && !isUniquenessPending)
         ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/40'
         : 'bg-white dark:bg-slate-900 text-blue-600/30 dark:text-slate-700 border-2 border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-80'
     }`}
   >
-    <span>{isSubmitting ? 'Submitting...' : 'Submit'}</span>
-    <ArrowRight className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${(!isFormValid || isSubmitting) ? 'opacity-10' : ''}`} />
+    <span>{isSubmitting ? 'Submitting...' : DEV_BYPASS_SUBMIT ? 'Submit (test)' : 'Submit'}</span>
+    <ArrowRight className={`w-8 h-8 transition-transform group-hover:translate-x-3 ${(!DEV_BYPASS_SUBMIT && (!isFormValid || isSubmitting)) ? 'opacity-10' : ''}`} />
   </button>
 )}
 
